@@ -1,3 +1,21 @@
+import { Field, InputType } from '@nestjs/graphql';
+
 import { User } from '../models/user.model';
 
-export type UpdateUserDto = Partial<User>;
+@InputType()
+export class UpdateUserDto implements Partial<User> {
+  @Field()
+  public id: number;
+
+  @Field({ nullable: true })
+  public login?: string;
+
+  @Field({ nullable: true })
+  public password?: string;
+
+  @Field({ nullable: true })
+  public firstName?: string;
+
+  @Field({ nullable: true })
+  public lastName?: string;
+}

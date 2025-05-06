@@ -14,32 +14,44 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
+  public create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.usersRepository.create(createUserDto);
     return this.usersRepository.save(user);
   }
 
-  async updateById(id: number, updateUserDto: UpdateUserDto) {
+  public async updateById(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<User | null> {
     await this.usersRepository.update({ id }, updateUserDto);
     return this.findById(id);
   }
 
-  async deleteById(id: number) {
+  public async deleteById(id: number): Promise<boolean> {
     const user = await this.findById(id);
     if (!user) {
       return false;
     }
-    return await this.usersRepository.delete({ id });
+    await this.usersRepository.delete({ id });
+    return true;
   }
 
-  findAll() {
+  public findAll(): Promise<User[]> {
     return this.usersRepository.find();
   }
 
-  findById(id: number) {
+  public findById(id: number): Promise<User | null> {
     return this.usersRepository.findOne({
       where: {
         id,
+      },
+    });
+  }
+
+  public findByLogin(login: string): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: {
+        login,
       },
     });
   }

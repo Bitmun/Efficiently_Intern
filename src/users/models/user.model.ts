@@ -7,21 +7,29 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 export class User {
   @PrimaryGeneratedColumn()
   @Field((_type) => Int)
-  id: number;
+  public id: number;
 
   @Column()
   @Field()
-  login: string;
+  public login: string;
 
   @Column()
   @Field()
-  password: string;
+  public password: string;
+
+  @Column()
+  @Field()
+  public firstName: string;
+
+  @Column()
+  @Field()
+  public lastName: string;
 
   @Column({ default: new Date() })
   @Field()
-  createdAt: Date;
+  public createdAt: Date;
 
   @Column({ default: new Date() })
   @Field()
-  updatedAt: Date;
+  public updatedAt: Date;
 }
