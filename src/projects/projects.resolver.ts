@@ -1,3 +1,4 @@
+import { UseGuards } from '@nestjs/common';
 import {
   Args,
   Int,
@@ -13,6 +14,7 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './models/project.model';
 import { ProjectsService } from './projects.service';
 
+import { AuthGuard } from 'src/guards/auth.guard';
 import { User } from 'src/users/models/user.model';
 
 @Resolver(() => Project)
@@ -27,6 +29,7 @@ export class ProjectsResolver {
   }
 
   @Query(() => [Project])
+  @UseGuards(AuthGuard)
   public findAllProjects(): Promise<Project[]> {
     return this.projectsService.findAll();
   }
