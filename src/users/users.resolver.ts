@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
@@ -43,5 +43,11 @@ export class UsersResolver {
   ): Promise<boolean> {
     const { id } = input;
     return this.usersService.deleteById(id);
+  }
+
+  @ResolveField()
+  public fullName(@Parent() user: User): string {
+    const { firstName, lastName } = user;
+    return `${firstName} ${lastName}`;
   }
 }

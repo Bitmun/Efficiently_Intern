@@ -1,6 +1,7 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Project } from 'src/projects/models/project.model';
+import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('users')
 @ObjectType()
@@ -32,4 +33,12 @@ export class User {
   @Column({ default: new Date() })
   @Field()
   public updatedAt: Date;
+
+  @OneToMany(() => Project, (project) => project.creator)
+  @Field(() => [Project])
+  public createdProjects: Project[];
+
+  @ManyToMany(() => Project, (project) => project.members)
+  @Field(() => [Project])
+  public projects: Project[];
 }
