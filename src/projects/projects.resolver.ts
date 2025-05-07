@@ -1,13 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import {
-  Args,
-  Int,
-  Mutation,
-  Parent,
-  Query,
-  ResolveField,
-  Resolver,
-} from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -15,7 +7,6 @@ import { Project } from './models/project.model';
 import { ProjectsService } from './projects.service';
 
 import { AuthGuard } from 'src/guards/auth.guard';
-import { User } from 'src/users/models/user.model';
 
 @Resolver(() => Project)
 export class ProjectsResolver {
@@ -57,18 +48,8 @@ export class ProjectsResolver {
   @Mutation(() => Project)
   public async addMemberToProject(
     @Args('projectId', { type: () => Int }) projectId: number,
-    @Args('userId', { type: () => Int }) userId: number,
+    @Args('userId', { type: () => String }) userId: string,
   ): Promise<Project> {
     return this.projectsService.addMemberToProject(projectId, userId);
-  }
-
-  @ResolveField()
-  public creator(@Parent() project: Project): User {
-    return project.creator;
-  }
-
-  @ResolveField()
-  public members(@Parent() project: Project): User[] {
-    return project.members;
   }
 }

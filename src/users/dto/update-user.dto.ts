@@ -5,7 +5,7 @@ import { User } from '../models/user.model';
 @InputType()
 export class UpdateUserDto implements Partial<User> {
   @Field()
-  public id: number;
+  public id: string;
 
   @Field({ nullable: true })
   public login?: string;

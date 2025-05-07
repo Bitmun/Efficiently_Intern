@@ -40,7 +40,7 @@ export class ProjectsService {
     });
   }
 
-  public async addMemberToProject(projectId: number, userId: number): Promise<Project> {
+  public async addMemberToProject(projectId: number, userId: string): Promise<Project> {
     const project = await this.projectsRepository.findOne({
       where: { id: projectId },
       relations: ['members'],

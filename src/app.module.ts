@@ -6,7 +6,9 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
+import { Project } from './projects/models/project.model';
 import { ProjectsModule } from './projects/projects.module';
+import { User } from './users/models/user.model';
 import { UsersModule } from './users/users.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -32,7 +34,7 @@ import { AppService } from './app.service';
       username: 'postgres',
       password: 'postgres',
       database: 'postgres',
-      entities: [],
+      entities: [User, Project],
       synchronize: true,
       autoLoadEntities: true,
     }),

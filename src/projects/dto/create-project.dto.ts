@@ -8,6 +8,6 @@ export class CreateProjectDto {
   @Field()
   public body: string;
 
-  @Field(() => Number)
-  public creatorId: number;
+  @Field(() => String)
+  public creatorId: string;
 }

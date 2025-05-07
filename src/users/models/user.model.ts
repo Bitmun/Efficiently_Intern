@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 
 import { Project } from 'src/projects/models/project.model';
 import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
@@ -6,9 +6,9 @@ import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 't
 @Entity('users')
 @ObjectType()
 export class User {
-  @PrimaryGeneratedColumn()
-  @Field((_type) => Int)
-  public id: number;
+  @PrimaryGeneratedColumn('uuid')
+  @Field((_type) => String)
+  public id: string;
 
   @Column()
   @Field()

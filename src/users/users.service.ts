@@ -20,14 +20,14 @@ export class UsersService {
   }
 
   public async updateById(
-    id: number,
+    id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<User | null> {
     await this.usersRepository.update({ id }, updateUserDto);
     return this.findById(id);
   }
 
-  public async deleteById(id: number): Promise<boolean> {
+  public async deleteById(id: string): Promise<boolean> {
     const user = await this.findById(id);
     if (!user) {
       return false;
@@ -40,7 +40,7 @@ export class UsersService {
     return this.usersRepository.find();
   }
 
-  public findById(id: number): Promise<User | null> {
+  public findById(id: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: {
         id,
