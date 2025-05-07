@@ -27,7 +27,7 @@ export class AuthResolver {
     @Context('res') res: Response,
   ): Promise<AuthRes> {
     const { accessToken } = await this.authService.signUp(input);
-    res.cookie('accessToken', `Bearer ${accessToken}`);
+    res.cookie('accessToken', accessToken);
     return { accessToken };
   }
 }

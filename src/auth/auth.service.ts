@@ -18,7 +18,9 @@ export class AuthService {
 
   public async signIn(signInDto: SignInDto): Promise<AuthRes> {
     const { login, password } = signInDto;
+
     const existingUser = await this.usersService.findByLogin(login);
+
     if (!existingUser) {
       throw new BadRequestException('User with such login is not found');
     }
