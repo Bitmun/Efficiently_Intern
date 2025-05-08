@@ -1,3 +1,4 @@
+import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 
 import { CreateUserDto } from './dto/create-user.dto';
@@ -6,6 +7,8 @@ import { GetUserDto } from './dto/get-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './models/user.model';
 import { UsersService } from './users.service';
+
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -17,6 +20,12 @@ export class UsersResolver {
   ): Promise<User | null> {
     const { id } = input;
     return await this.usersService.findById(id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Query(() => [User])
+  public async findAllUsers(): Promise<User[] | null> {
+    return await this.usersService.findAll();
   }
 
   @Mutation(() => User)

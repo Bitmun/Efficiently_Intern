@@ -8,11 +8,9 @@ export class UsersRefactoring1746610797414 implements MigrationInterface {
 
         UPDATE public.users SET uuid = uuid_generate_v4();
 
-        ALTER TABLE public.users DROP CONSTRAINT PK_a3ffb1c0c8416b9fc6f907b7433;
-
+        ALTER TABLE public.users DROP COLUMN id CASCADE;
+        
         ALTER TABLE public.users ADD PRIMARY KEY (uuid);
-
-        ALTER TABLE public.users DROP COLUMN id;
 
         ALTER TABLE public.users RENAME COLUMN uuid TO id;
 `,
