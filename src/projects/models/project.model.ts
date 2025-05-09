@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 
 import { User } from 'src/users/models/user.model';
 import {
@@ -15,8 +15,8 @@ import {
 @ObjectType()
 export class Project {
   @PrimaryGeneratedColumn('uuid')
-  @Field(() => Int)
-  public id: number;
+  @Field(() => String)
+  public id: string;
 
   @Column()
   @Field()

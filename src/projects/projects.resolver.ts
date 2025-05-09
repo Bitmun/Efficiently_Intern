@@ -32,7 +32,7 @@ export class ProjectsResolver {
 
   @Query(() => Project)
   public getProject(
-    @Args('id', { type: () => Int }) id: number,
+    @Args('id', { type: () => String }) id: string,
   ): Promise<Project | null> {
     return this.projectsService.findById(id);
   }
@@ -46,13 +46,13 @@ export class ProjectsResolver {
   }
 
   @Mutation(() => Boolean)
-  public deleteProject(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
+  public deleteProject(@Args('id', { type: () => String }) id: string): Promise<boolean> {
     return this.projectsService.deleteById(id);
   }
 
   @Mutation(() => Project)
   public async addMemberToProject(
-    @Args('projectId', { type: () => Int }) projectId: number,
+    @Args('projectId', { type: () => String }) projectId: string,
     @Args('userId', { type: () => String }) userId: string,
   ): Promise<Project> {
     return this.projectsService.addMemberToProject(projectId, userId);

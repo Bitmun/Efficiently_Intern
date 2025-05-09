@@ -35,14 +35,14 @@ export class ProjectsService {
     return this.projectsRepository.find({ relations: ['creator', 'members'] });
   }
 
-  public async findById(id: number): Promise<Project | null> {
+  public async findById(id: string): Promise<Project | null> {
     return this.projectsRepository.findOne({
       where: { id },
       relations: ['creator', 'members'],
     });
   }
 
-  public async addMemberToProject(projectId: number, userId: string): Promise<Project> {
+  public async addMemberToProject(projectId: string, userId: string): Promise<Project> {
     const project = await this.projectsRepository.findOne({
       where: { id: projectId },
       relations: ['members'],
@@ -51,6 +51,7 @@ export class ProjectsService {
     if (!project) {
       throw new NotFoundException('Project is not found');
     }
+
     const user = await this.usersService.findById(userId);
 
     if (!user) {
@@ -71,14 +72,14 @@ export class ProjectsService {
   }
 
   public async updateById(
-    id: number,
+    id: string,
     updateProjectDto: UpdateProjectDto,
   ): Promise<Project | null> {
     await this.projectsRepository.update(id, updateProjectDto);
     return this.findById(id);
   }
 
-  public async deleteById(id: number): Promise<boolean> {
+  public async deleteById(id: string): Promise<boolean> {
     const project = await this.findById(id);
     if (!project) {
       return false;

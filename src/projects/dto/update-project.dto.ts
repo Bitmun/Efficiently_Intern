@@ -4,6 +4,6 @@ import { CreateProjectDto } from './create-project.dto';
 
 @InputType()
 export class UpdateProjectDto extends PartialType(CreateProjectDto) {
-  @Field(() => Number)
-  public id: number;
+  @Field(() => String)
+  public id: string;
 }
