@@ -1,5 +1,5 @@
-import { UseGuards } from '@nestjs/common';
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { UseGuards, UseInterceptors } from '@nestjs/common';
+import { Args, Context, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -7,7 +7,11 @@ import { Project } from './models/project.model';
 import { ProjectsService } from './projects.service';
 
 import { AuthGuard } from 'src/guards/auth.guard';
+import { RlsInterceptor } from 'src/interceptors/RlsInterceptor';
+import { AuthContext } from 'src/types/contextTypes';
 
+@UseGuards(AuthGuard)
+@UseInterceptors(RlsInterceptor)
 @Resolver(() => Project)
 export class ProjectsResolver {
   constructor(private readonly projectsService: ProjectsService) {}
@@ -15,12 +19,13 @@ export class ProjectsResolver {
   @Mutation(() => Project)
   public createProject(
     @Args('input') createProjectDto: CreateProjectDto,
+    @Context() context: AuthContext,
   ): Promise<Project> {
-    return this.projectsService.create(createProjectDto);
+    const { id } = context.req.user;
+    return this.projectsService.create(id, createProjectDto);
   }
 
   @Query(() => [Project])
-  @UseGuards(AuthGuard)
   public findAllProjects(): Promise<Project[]> {
     return this.projectsService.findAll();
   }

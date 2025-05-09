@@ -16,8 +16,10 @@ export class ProjectsService {
     private usersService: UsersService,
   ) {}
 
-  public async create(createProjectDto: CreateProjectDto): Promise<Project> {
-    const { creatorId } = createProjectDto;
+  public async create(
+    creatorId: string,
+    createProjectDto: CreateProjectDto,
+  ): Promise<Project> {
     const user = await this.usersService.findById(creatorId);
     if (!user) {
       throw new NotFoundException('User not found to create project');

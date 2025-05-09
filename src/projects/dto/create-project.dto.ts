@@ -7,7 +7,4 @@ export class CreateProjectDto {
 
   @Field()
   public body: string;
-
-  @Field(() => String)
-  public creatorId: string;
 }

@@ -28,11 +28,11 @@ export class Project {
 
   @Column('uuid')
   @Field()
-  public creatorId: string;
+  public creator_id: string;
 
   @ManyToOne(() => User, (user) => user.createdProjects)
   @Field(() => User)
-  @JoinColumn({ name: 'creatorId' })
+  @JoinColumn({ name: 'creator_id' })
   public creator: User;
 
   @ManyToMany(() => User, (user) => user.projects)
