@@ -1,1 +1,2 @@
-CREATE ROLE default_user WITH LOGIN PASSWORD 'password' 
+CREATE ROLE default_user WITH LOGIN PASSWORD 'password';
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO default_user;
