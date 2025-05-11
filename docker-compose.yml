@@ -24,3 +24,15 @@ services:
       - '5050:80'
     depends_on:
       - db
+
+  mongodb:
+    image: mongo
+    restart: always
+    container_name: mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+    volumes:
+      - ./mongodata:/data/db
+    ports:
+      - '27017:27017'

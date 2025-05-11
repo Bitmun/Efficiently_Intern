@@ -3,9 +3,11 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
+import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
+import { CatsModule } from './cats/cats.module';
 import { Project } from './projects/models/project.model';
 import { ProjectsModule } from './projects/projects.module';
 import { User } from './users/models/user.model';
@@ -26,6 +28,9 @@ import { AppService } from './app.service';
       },
       context: ({ req, res }) => ({ req, res }),
     }),
+    MongooseModule.forRoot('mongodb://root:example@localhost:27017', {
+      dbName: 'myDatabase',
+    }),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -41,6 +46,7 @@ import { AppService } from './app.service';
     UsersModule,
     AuthModule,
     ProjectsModule,
+    CatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
