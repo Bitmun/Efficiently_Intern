@@ -7,7 +7,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
-import { CatsModule } from './cats/cats.module';
 import { Project } from './projects/models/project.model';
 import { ProjectsModule } from './projects/projects.module';
 import { User } from './users/models/user.model';
@@ -46,7 +45,6 @@ import { AppService } from './app.service';
     UsersModule,
     AuthModule,
     ProjectsModule,
-    CatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
