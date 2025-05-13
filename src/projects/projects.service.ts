@@ -5,6 +5,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './models/project.model';
 
+import { ChatsService } from 'src/chats/chats.service';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 
@@ -14,6 +15,7 @@ export class ProjectsService {
     @InjectRepository(Project)
     private projectsRepository: Repository<Project>,
     private usersService: UsersService,
+    private chatsService: ChatsService,
   ) {}
 
   public async create(
@@ -27,8 +29,16 @@ export class ProjectsService {
     const project = this.projectsRepository.create({
       ...createProjectDto,
       creator: user,
+      members: [user],
     });
-    return this.projectsRepository.save(project);
+
+    const savedProject = await this.projectsRepository.save(project);
+
+    const { id, creator_id } = savedProject;
+
+    await this.chatsService.create(id, [creator_id]);
+
+    return savedProject;
   }
 
   public async findAll(): Promise<Project[]> {
@@ -67,6 +77,8 @@ export class ProjectsService {
     project.members.push(user);
 
     await this.projectsRepository.save(project);
+
+    await this.chatsService.addUserToProjectChat(project.id, userId);
 
     return project;
   }

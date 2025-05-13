@@ -24,6 +24,9 @@ services:
       - '5050:80'
     depends_on:
       - db
+    volumes:
+    - ./server.json:/pgadmin4/servers.json
+
 
   mongodb:
     image: mongo

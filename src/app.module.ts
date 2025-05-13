@@ -7,6 +7,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
+import { ChatsModule } from './chats/chats.module';
+import { MessagesModule } from './messages/messages.module';
 import { Project } from './projects/models/project.model';
 import { ProjectsModule } from './projects/projects.module';
 import { User } from './users/models/user.model';
@@ -24,6 +26,9 @@ import { AppService } from './app.service';
         settings: {
           'request.credentials': 'include',
         },
+      },
+      subscriptions: {
+        'graphql-ws': true,
       },
       context: ({ req, res }) => ({ req, res }),
     }),
@@ -45,6 +50,8 @@ import { AppService } from './app.service';
     UsersModule,
     AuthModule,
     ProjectsModule,
+    ChatsModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
