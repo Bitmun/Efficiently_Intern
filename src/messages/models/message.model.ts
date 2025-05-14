@@ -7,6 +7,9 @@ import { Document, Types } from 'mongoose';
 @ObjectType()
 export class Message extends Document {
   @Field(() => String)
+  declare public _id: string;
+
+  @Field(() => String)
   @Prop({ type: Types.ObjectId, ref: 'Chat', required: true })
   public chatId: Types.ObjectId;
 
@@ -16,7 +19,7 @@ export class Message extends Document {
 
   @Field()
   @Prop({ type: String, required: true })
-  public userLogin: string;
+  public username: string;
 
   @Field()
   @Prop({ type: String, required: true })

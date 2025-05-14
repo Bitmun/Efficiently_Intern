@@ -36,7 +36,7 @@ export class ProjectsService {
 
     const { id, creator_id } = savedProject;
 
-    await this.chatsService.create(id, [creator_id]);
+    await this.chatsService.create(id, [creator_id], 'general');
 
     return savedProject;
   }
@@ -77,8 +77,6 @@ export class ProjectsService {
     project.members.push(user);
 
     await this.projectsRepository.save(project);
-
-    await this.chatsService.addUserToProjectChat(project.id, userId);
 
     return project;
   }

@@ -13,6 +13,10 @@ export class Chat extends Document {
   @Prop({ type: String, required: true })
   public projectId: string;
 
+  @Field()
+  @Prop({ type: String, required: true })
+  public subject: string;
+
   @Field(() => [String])
   @Prop({ type: [String], default: [] })
   public memberIds: string[];

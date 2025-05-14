@@ -13,8 +13,12 @@ export class ChatsService {
     private msgService: MessagesService,
   ) {}
 
-  public async create(projectId: string, memberIds: string[]): Promise<Chat> {
-    return await this.chatModel.create({ projectId, memberIds });
+  public async create(
+    projectId: string,
+    memberIds: string[],
+    subject: string,
+  ): Promise<Chat> {
+    return await this.chatModel.create({ projectId, memberIds, subject });
   }
 
   public async findAll(): Promise<Chat[]> {
@@ -29,8 +33,8 @@ export class ChatsService {
     return chat;
   }
 
-  public async addUserToProjectChat(projectId: string, userId: string): Promise<void> {
-    await this.chatModel.updateOne({ projectId }, { $push: { memberIds: userId } });
+  public async addUserToChat(chatId: string, userId: string): Promise<void> {
+    await this.chatModel.updateOne({ _id: chatId }, { $push: { memberIds: userId } });
   }
 
   public async removeUserFromChat(chatId: string, userId: string): Promise<void> {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Args, Mutation, Resolver, Subscription } from '@nestjs/graphql';
 
@@ -11,7 +10,6 @@ import { MessagesService } from './messages.service';
 
 import { pubSub } from 'src/pubsub/pubsub.provider';
 
-// @UseGuards(AuthGuard)
 @Resolver(() => Message)
 export class MessagesResolver {
   constructor(private readonly msgService: MessagesService) {}

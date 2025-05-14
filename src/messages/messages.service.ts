@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
@@ -24,21 +22,21 @@ export class MessagesService {
     const message = await this.msgModel.create({
       ...sendMsgDto,
       userId: id,
-      userLogin: login,
+      username: login,
     });
 
     const payload: MessageSendPayload = {
       messageSend: message,
     };
 
-    pubSub.publish(MESSAGE_TRIGGERS.SEND_MESSAGE, payload);
+    await pubSub.publish(MESSAGE_TRIGGERS.SEND_MESSAGE, payload);
     return message;
   }
 
   public async deleteMessage(messageId: string): Promise<Message> {
     const message = await this.msgModel.findByIdAndUpdate(
       messageId,
-      { isDeleted: true, text: '[Deleted]' },
+      { isDeleted: true, body: '[Deleted]' },
       { new: true },
     );
 
@@ -50,7 +48,7 @@ export class MessagesService {
       messageDeleted: message,
     };
 
-    pubSub.publish(MESSAGE_TRIGGERS.DELETE_MESSAGE, payload);
+    await pubSub.publish(MESSAGE_TRIGGERS.DELETE_MESSAGE, payload);
 
     return message;
   }
@@ -75,3 +73,9 @@ export class MessagesService {
     return this.msgModel.updateMany({ chatId, userId }, { login: '[Deleted User]' });
   }
 }
+
+// поиск по многим чатам (elastic search)
+// добавить subject к чатам
+// прочитанно, непрачитанно
+// chat participants
+// user login to username
