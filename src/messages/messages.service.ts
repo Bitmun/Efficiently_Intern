@@ -73,9 +73,3 @@ export class MessagesService {
     return this.msgModel.updateMany({ chatId, userId }, { login: '[Deleted User]' });
   }
 }
-
-// поиск по многим чатам (elastic search)
-// добавить subject к чатам
-// прочитанно, непрачитанно
-// chat participants
-// user login to username
