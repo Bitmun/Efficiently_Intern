@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
 import { ChatsModule } from './chats/chats.module';
+import { OnConnectGuard } from './guards/ws-auth.guard';
 import { MessagesModule } from './messages/messages.module';
 import { Project } from './projects/models/project.model';
 import { ProjectsModule } from './projects/projects.module';
@@ -28,9 +29,22 @@ import { AppService } from './app.service';
         },
       },
       subscriptions: {
-        'graphql-ws': true,
+        'graphql-ws': {
+          onConnect: OnConnectGuard,
+        },
       },
-      context: ({ req, res }) => ({ req, res }),
+      context: ({ req, res, connection }) => {
+        if (connection) {
+          return {
+            req: {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              user: connection.context.user,
+            },
+          };
+        }
+
+        return { req, res };
+      },
     }),
     MongooseModule.forRoot('mongodb://root:example@localhost:27017', {
       dbName: 'myDatabase',

@@ -6,3 +6,13 @@ export interface AuthContext {
 }
 
 export type ContextUser = JwtTokenPayload;
+
+export interface WsOnConnectContext {
+  extra: {
+    request: {
+      headers: {
+        cookie: string;
+      };
+    };
+  };
+}

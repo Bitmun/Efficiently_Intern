@@ -28,8 +28,9 @@ export class MessagesResolver {
   }
 
   @Subscription(() => Message, {
-    filter: (payload: MessageSendPayload, variables) =>
-      payload.messageSend.chatId === variables.chatId,
+    filter: (payload: MessageSendPayload, variables) => {
+      return payload.messageSend.chatId === variables.chatId;
+    },
   })
   public messageSend(@Args('chatId') _chatId: string): any {
     return pubSub.asyncIterableIterator(MESSAGE_TRIGGERS.SEND_MESSAGE);
