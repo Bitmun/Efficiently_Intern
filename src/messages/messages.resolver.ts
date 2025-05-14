@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Args, Mutation, Resolver, Subscription } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 
 import { DeleteMessageDto } from './dto/delete-message.dto';
 import { SendMessageDto } from './dto/send-message.dto';
@@ -10,16 +10,33 @@ import { MessagesService } from './messages.service';
 
 import { pubSub } from 'src/pubsub/pubsub.provider';
 
+const user = {
+  id: '50495464-66ab-4808-844a-9d6d32f87292',
+  login: 'login1',
+};
+
 @Resolver(() => Message)
 export class MessagesResolver {
   constructor(private readonly msgService: MessagesService) {}
 
+  @Query(() => Number)
+  public async unreadMessagesCount(@Args('chatId') chatId: string): Promise<number> {
+    return await this.msgService.getUnreadMessagesCount(chatId, user.id);
+  }
+
+  @Mutation(() => Number)
+  public async markAllMessagesAsRead(@Args('chatId') chatId: string): Promise<number> {
+    return await this.msgService.markChatMessagesAsRead(chatId, user.id);
+  }
+
+  @Mutation(() => Message)
+  public async readMessage(@Args('messageId') messageId: string): Promise<void> {
+    return await this.msgService.markMessageAsRead(messageId, user.id);
+  }
+
   @Mutation(() => Message)
   public async sendMessage(@Args('input') input: SendMessageDto): Promise<Message> {
-    return await this.msgService.sendMessage(input, {
-      id: '50495464-66ab-4808-844a-9d6d32f87292',
-      login: 'login1',
-    });
+    return await this.msgService.sendMessage(input, user);
   }
 
   @Mutation(() => Message)
