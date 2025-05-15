@@ -34,12 +34,12 @@ import { AppService } from './app.service';
           onConnect: OnConnectGuard,
         },
       },
-      context: ({ req, res, connection }) => {
-        if (connection) {
+      context: ({ req, res, extra }) => {
+        if (extra) {
           return {
             req: {
               // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-              user: connection.context.user,
+              user: extra.user,
             },
           };
         }

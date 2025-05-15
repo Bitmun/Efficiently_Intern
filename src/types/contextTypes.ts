@@ -9,6 +9,7 @@ export type ContextUser = JwtTokenPayload;
 
 export interface WsOnConnectContext {
   extra: {
+    user: ContextUser;
     request: {
       headers: {
         cookie: string;
