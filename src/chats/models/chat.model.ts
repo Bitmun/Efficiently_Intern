@@ -16,10 +16,6 @@ export class Chat extends Document {
   @Field()
   @Prop({ type: String, required: true })
   public subject: string;
-
-  @Field(() => [String])
-  @Prop({ type: [String], default: [] })
-  public memberIds: string[];
 }
 
 export const ChatSchema = SchemaFactory.createForClass(Chat);

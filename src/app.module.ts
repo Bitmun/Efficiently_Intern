@@ -7,6 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
+import { ChatMemberInfoModule } from './chat-member-info/chat-member-info.module';
 import { ChatsModule } from './chats/chats.module';
 import { OnConnectGuard } from './guards/ws-auth.guard';
 import { MessagesModule } from './messages/messages.module';
@@ -66,6 +67,7 @@ import { AppService } from './app.service';
     ProjectsModule,
     ChatsModule,
     MessagesModule,
+    ChatMemberInfoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

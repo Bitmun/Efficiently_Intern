@@ -8,6 +8,6 @@ export class CreateChatDto {
   @Field()
   public subject: string;
 
-  @Field(() => [String])
-  public memberIds: string[];
+  @Field(() => [String], { nullable: true })
+  public memberIds?: string[];
 }

@@ -1,9 +1,14 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { CreateChatDto } from './dto/create-chat.dto';
-import { Chat } from './models/chat.module';
+import { Chat } from './models/chat.model';
 import { ChatsService } from './chats.service';
 
+import { AuthGuard } from 'src/guards/auth.guard';
+import { AuthContext } from 'src/types/contextTypes';
+
+@UseGuards(AuthGuard)
 @Resolver(() => Chat)
 export class ChatsResolver {
   constructor(private chatsService: ChatsService) {}
@@ -16,9 +21,14 @@ export class ChatsResolver {
   @Mutation(() => Chat)
   public async createChat(
     @Args('input', { type: () => CreateChatDto }) input: CreateChatDto,
+    @Context() context: AuthContext,
   ): Promise<Chat> {
     const { projectId, memberIds, subject } = input;
-    return await this.chatsService.create(projectId, memberIds, subject);
+
+    const { id } = context.req.user;
+
+    const members = [id, ...(memberIds || [])];
+    return await this.chatsService.create(projectId, members, subject);
   }
 
   @Mutation(() => Boolean)

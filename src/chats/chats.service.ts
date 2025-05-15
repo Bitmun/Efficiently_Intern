@@ -1,9 +1,16 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Chat } from './models/chat.module';
+import { Chat } from './models/chat.model';
 
 import { Model } from 'mongoose';
+import { ChatMemberInfoService } from 'src/chat-member-info/chat-member-info.service';
 import { MessagesService } from 'src/messages/messages.service';
 
 @Injectable()
@@ -12,6 +19,7 @@ export class ChatsService {
     @InjectModel(Chat.name) private chatModel: Model<Chat>,
     @Inject(forwardRef(() => MessagesService))
     private readonly msgService: MessagesService,
+    private readonly chatMemberService: ChatMemberInfoService,
   ) {}
 
   public async create(
@@ -19,7 +27,17 @@ export class ChatsService {
     memberIds: string[],
     subject: string,
   ): Promise<Chat> {
-    return await this.chatModel.create({ projectId, memberIds, subject });
+    const chat = await this.chatModel.create({ projectId, subject });
+
+    if (!chat) {
+      throw new BadRequestException('Chat not created');
+    }
+
+    await Promise.all(
+      memberIds.map((userId) => this.chatMemberService.create(chat._id, userId)),
+    );
+
+    return chat;
   }
 
   public async findAll(): Promise<Chat[]> {
@@ -34,21 +52,42 @@ export class ChatsService {
     return chat;
   }
 
+  public async deleteById(id: string): Promise<boolean> {
+    const chatToDelete = await this.chatModel.findByIdAndDelete(id);
+
+    if (!chatToDelete) {
+      return false;
+    }
+
+    await this.chatMemberService.deleteChatsAllInfo(id);
+
+    return true;
+  }
+
   public async addUserToChat(chatId: string, userId: string): Promise<boolean> {
-    const res = await this.chatModel.updateOne(
-      { _id: chatId },
-      { $push: { memberIds: userId } },
-    );
-    return res.modifiedCount > 0;
+    const chat = await this.chatModel.findById(chatId);
+    if (!chat) {
+      throw new NotFoundException('Chat not found');
+    }
+
+    const existing = await this.chatMemberService.findByIds(chatId, userId);
+    if (existing) {
+      return false;
+    }
+
+    await this.chatMemberService.create(chatId, userId);
+    return true;
   }
 
   public async removeUserFromChat(chatId: string, userId: string): Promise<boolean> {
-    const res = await this.chatModel.updateOne(
-      { _id: chatId },
-      { $pull: { memberIds: userId } },
-    );
+    const chat = await this.chatModel.findById(chatId);
+    if (!chat) {
+      throw new NotFoundException('Chat not found');
+    }
 
-    if (res.modifiedCount === 0) {
+    const res = await this.chatMemberService.deleteByIds(chatId, userId);
+
+    if (!res) {
       return false;
     }
 

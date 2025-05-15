@@ -28,6 +28,10 @@ export class Message extends Document {
   @Field()
   @Prop({ default: false })
   public isDeleted: boolean;
+
+  @Field(() => String)
+  @Prop({ type: Date, required: true })
+  declare public createdAt: Date;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

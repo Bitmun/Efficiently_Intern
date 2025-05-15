@@ -1,14 +1,13 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { SendMessageDto } from './dto/send-message.dto';
 import { Message } from './models/message.model';
-import { UnreadMessage } from './models/unread-message.model';
 import { MessageDeletedPayload, MessageSendPayload } from './message-subs-payloads';
 import { MESSAGE_TRIGGERS } from './message-subs-triggers';
 
 import { Model } from 'mongoose';
-import { ChatsService } from 'src/chats/chats.service';
+import { ChatMemberInfoService } from 'src/chat-member-info/chat-member-info.service';
 import { pubSub } from 'src/pubsub/pubsub.provider';
 import { ContextUser } from 'src/types/contextTypes';
 
@@ -16,9 +15,7 @@ import { ContextUser } from 'src/types/contextTypes';
 export class MessagesService {
   constructor(
     @InjectModel(Message.name) private msgModel: Model<Message>,
-    @InjectModel(UnreadMessage.name) private unreadMsgModel: Model<UnreadMessage>,
-    @Inject(forwardRef(() => ChatsService))
-    private readonly chatsService: ChatsService,
+    private readonly chatMemberService: ChatMemberInfoService,
   ) {}
 
   public async sendMessage(
@@ -32,28 +29,11 @@ export class MessagesService {
       username: login,
     });
 
-    const { chatId } = sendMsgDto;
-
-    const chat = await this.chatsService.findById(chatId);
-
-    if (!chat) {
-      throw new NotFoundException('Chat not found');
-    }
-
-    const unreadMsgEntries = chat.memberIds
-      .filter((uid) => uid !== id)
-      .map((uid) => ({
-        messageId: message._id,
-        chatId: chat._id,
-        userId: uid,
-      }));
-
-    await this.unreadMsgModel.insertMany(unreadMsgEntries);
-
     const payload: MessageSendPayload = {
       messageSend: message,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     await pubSub.publish(MESSAGE_TRIGGERS.SEND_MESSAGE, payload);
 
     return message;
@@ -74,6 +54,7 @@ export class MessagesService {
       messageDeleted: message,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     await pubSub.publish(MESSAGE_TRIGGERS.DELETE_MESSAGE, payload);
 
     return message;
@@ -92,24 +73,50 @@ export class MessagesService {
     return messages;
   }
 
+  public async markMessageAsRead(
+    chatId: string,
+    userId: string,
+    messageId: string,
+  ): Promise<void> {
+    const member = await this.chatMemberService.findByIds(chatId, userId);
+
+    if (!member) {
+      throw new NotFoundException('Chat member not found');
+    }
+
+    member.lastReadMsgId = messageId;
+    await member.save();
+  }
+
+  public async markChatAsRead(chatId: string, userId: string): Promise<void> {
+    const lastMessage = await this.msgModel.findOne({ chatId }).sort({ createdAt: -1 });
+
+    if (!lastMessage) return;
+
+    await this.chatMemberService.updateLastMsg(chatId, userId, lastMessage._id);
+  }
+
+  public async countUnreadMessages(chatId: string, userId: string): Promise<number> {
+    const member = await this.chatMemberService.findByIds(chatId, userId);
+    if (!member) {
+      throw new NotFoundException('Chat member not found');
+    }
+
+    const filter: { chatId: string; createdAt?: { $gt: Date } } = { chatId };
+    if (member.lastReadMsgId) {
+      const lastReadMessage = await this.msgModel.findById(member.lastReadMsgId);
+      if (lastReadMessage) {
+        filter.createdAt = { $gt: lastReadMessage.createdAt };
+      }
+    }
+
+    return await this.msgModel.countDocuments(filter);
+  }
+
   public async updateMessagesForRemovedUser(
     chatId: string,
     userId: string,
   ): Promise<any> {
     return this.msgModel.updateMany({ chatId, userId }, { login: '[Deleted User]' });
-  }
-
-  public async markChatMessagesAsRead(chatId: string, userId: string): Promise<number> {
-    const res = await this.unreadMsgModel.deleteMany({ chatId, userId });
-    return res.deletedCount || 0;
-  }
-
-  public async markMessageAsRead(messageId: string, userId: string): Promise<void> {
-    await this.unreadMsgModel.deleteOne({ messageId, userId });
-  }
-
-  public async getUnreadMessagesCount(chatId: string, userId: string): Promise<number> {
-    const count = await this.unreadMsgModel.countDocuments({ chatId, userId });
-    return count;
   }
 }
