@@ -33,7 +33,6 @@ export class MessagesService {
       messageSend: message,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     await pubSub.publish(MESSAGE_TRIGGERS.SEND_MESSAGE, payload);
 
     return message;
@@ -54,7 +53,6 @@ export class MessagesService {
       messageDeleted: message,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     await pubSub.publish(MESSAGE_TRIGGERS.DELETE_MESSAGE, payload);
 
     return message;

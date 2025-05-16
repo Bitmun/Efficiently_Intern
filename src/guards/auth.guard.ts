@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import {
   BadRequestException,
   CanActivate,
@@ -10,36 +10,60 @@ import {
 import { Context, GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 
+import { IncomingHttpHeaders } from 'http';
+import { JwtTokenPayload } from 'src/auth/type';
+import { AuthGuardInterface } from 'src/interfaces/authGuard.interface';
 import { AuthContext } from 'src/types/contextTypes';
 import { extractAccessToken } from 'src/utils/cookiesParser';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class AuthGuard implements CanActivate, AuthGuardInterface {
   constructor(private jwtService: JwtService) {}
 
-  public async canActivate(@Context() context: ExecutionContext): Promise<boolean> {
-    const ctx = GqlExecutionContext.create(context).getContext() as AuthContext;
-
-    const { cookie } = ctx.req.headers;
-
-    if (!cookie) {
-      throw new BadRequestException('No cookies for auth');
-    }
-
+  public getAccessToken(cookie: string): string {
     const accessToken = extractAccessToken(cookie);
 
     if (!accessToken) {
       throw new UnauthorizedException('Token not provided');
     }
 
+    return accessToken;
+  }
+
+  public extractCookies(headers: IncomingHttpHeaders): string {
+    const { cookie } = headers;
+
+    if (!cookie) {
+      throw new BadRequestException('No cookies for auth');
+    }
+
+    return cookie;
+  }
+
+  public async verifyToken(
+    jwtService: JwtService,
+    accessToken: string,
+  ): Promise<JwtTokenPayload> {
     try {
-      const payload = await this.jwtService.verifyAsync(accessToken, {
+      const payload: JwtTokenPayload = await jwtService.verifyAsync(accessToken, {
         secret: 'secret',
       });
-      ctx.req['user'] = payload;
+      return payload;
     } catch {
       throw new UnauthorizedException('Invalid token');
     }
+  }
+
+  public async canActivate(@Context() context: ExecutionContext): Promise<boolean> {
+    const ctx = GqlExecutionContext.create(context).getContext() as AuthContext;
+
+    const cookie = this.extractCookies(ctx.req.headers);
+
+    const accessToken = this.getAccessToken(cookie);
+
+    const payload = await this.verifyToken(this.jwtService, accessToken);
+
+    ctx.req['user'] = payload;
 
     return true;
   }
