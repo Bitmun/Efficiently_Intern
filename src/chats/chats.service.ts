@@ -27,6 +27,15 @@ export class ChatsService {
     memberIds: string[],
     subject: string,
   ): Promise<Chat> {
+    const existingChat = await this.chatModel.findOne({
+      projectId,
+      subject,
+    });
+
+    if (existingChat) {
+      throw new BadRequestException('Chat with such name in this project already exists');
+    }
+
     const chat = await this.chatModel.create({ projectId, subject });
 
     if (!chat) {
@@ -59,18 +68,20 @@ export class ChatsService {
       return false;
     }
 
-    await this.chatMemberService.deleteChatsAllInfo(id);
+    await this.chatMemberService.deleteChatsAllMembers(id);
 
     return true;
   }
 
   public async addUserToChat(chatId: string, userId: string): Promise<boolean> {
     const chat = await this.chatModel.findById(chatId);
+
     if (!chat) {
       throw new NotFoundException('Chat not found');
     }
 
     const existing = await this.chatMemberService.findByIds(chatId, userId);
+
     if (existing) {
       return false;
     }

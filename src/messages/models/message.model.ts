@@ -30,7 +30,6 @@ export class Message extends Document {
   public isDeleted: boolean;
 
   @Field(() => String)
-  @Prop({ type: Date, required: true })
   declare public createdAt: Date;
 }
 

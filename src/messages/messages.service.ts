@@ -18,6 +18,10 @@ export class MessagesService {
     private readonly chatMemberService: ChatMemberInfoService,
   ) {}
 
+  public async findAll(): Promise<Message[]> {
+    return this.msgModel.find();
+  }
+
   public async sendMessage(
     sendMsgDto: SendMessageDto,
     contextUser: ContextUser,

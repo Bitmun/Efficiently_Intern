@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Args, Mutation, Resolver, Subscription } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
+import { Args, Context, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 
 import { DeleteMessageDto } from './dto/delete-message.dto';
 import { SendMessageDto } from './dto/send-message.dto';
@@ -9,25 +9,62 @@ import { MessageDeletedPayload, MessageSendPayload } from './message-subs-payloa
 import { MESSAGE_TRIGGERS } from './message-subs-triggers';
 import { MessagesService } from './messages.service';
 
+import { AuthGuard } from 'src/guards/auth.guard';
 import { pubSub } from 'src/pubsub/pubsub.provider';
-
-const user = {
-  id: '50495464-66ab-4808-844a-9d6d32f87292',
-  login: 'login1',
-};
-
+import { AuthContext } from 'src/types/contextTypes';
+@UseGuards(AuthGuard)
 @Resolver(() => Message)
 export class MessagesResolver {
   constructor(private readonly msgService: MessagesService) {}
 
+  @Query(() => Number)
+  public async countUnreadMessages(
+    @Args('chatId') chatId: string,
+    @Context() context: AuthContext,
+  ): Promise<number> {
+    const { user } = context.req;
+
+    return await this.msgService.countUnreadMessages(chatId, user.id);
+  }
+
+  @Query(() => [Message])
+  public async findAllMessages(): Promise<Message[]> {
+    return await this.msgService.findAll();
+  }
+
   @Mutation(() => Message)
-  public async sendMessage(@Args('input') input: SendMessageDto): Promise<Message> {
+  public async sendMessage(
+    @Args('input') input: SendMessageDto,
+    @Context() context: AuthContext,
+  ): Promise<Message> {
+    const { user } = context.req;
     return await this.msgService.sendMessage(input, user);
   }
 
   @Mutation(() => Message)
   public async deleteMessage(@Args('input') input: DeleteMessageDto): Promise<Message> {
     return await this.msgService.deleteMessage(input.messageId);
+  }
+
+  @Mutation(() => Boolean)
+  public async markMessageAsRead(
+    @Args('chatId') chatId: string,
+    @Args('messageId') messageId: string,
+    @Context() context: AuthContext,
+  ): Promise<boolean> {
+    const { user } = context.req;
+    await this.msgService.markMessageAsRead(chatId, user.id, messageId);
+    return true;
+  }
+
+  @Mutation(() => Boolean)
+  public async markChatAsRead(
+    @Args('chatId') chatId: string,
+    @Context() context: AuthContext,
+  ): Promise<boolean> {
+    const { user } = context.req;
+    await this.msgService.markChatAsRead(chatId, user.id);
+    return true;
   }
 
   @Subscription(() => Message, {

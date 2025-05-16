@@ -3,9 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { ChatMemberInfo, ChatMemberInfoSchema } from './model/chat-member-info.model';
 import { ChatMemberInfoService } from './chat-member-info.service';
+import { ChatMemberInfoResolver } from './chat-member-info.resolver';
 
 @Module({
-  providers: [ChatMemberInfoService],
+  providers: [ChatMemberInfoService, ChatMemberInfoResolver],
   imports: [
     MongooseModule.forFeature([
       { name: ChatMemberInfo.name, schema: ChatMemberInfoSchema },
