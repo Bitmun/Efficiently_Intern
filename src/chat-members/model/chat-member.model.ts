@@ -5,7 +5,7 @@ import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 @ObjectType()
-export class ChatMemberInfo extends Document {
+export class ChatMember extends Document {
   @Field(() => String)
   declare public _id: string;
 
@@ -22,4 +22,4 @@ export class ChatMemberInfo extends Document {
   public lastReadMsgId: string | null;
 }
 
-export const ChatMemberInfoSchema = SchemaFactory.createForClass(ChatMemberInfo);
+export const ChatMemberSchema = SchemaFactory.createForClass(ChatMember);

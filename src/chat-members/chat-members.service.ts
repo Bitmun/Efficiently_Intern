@@ -1,17 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { ChatMemberInfo } from './model/chat-member-info.model';
+import { ChatMember } from './model/chat-member.model';
 
 import { Model } from 'mongoose';
 
 @Injectable()
-export class ChatMemberInfoService {
-  constructor(
-    @InjectModel(ChatMemberInfo.name) private chatMemberModel: Model<ChatMemberInfo>,
-  ) {}
+export class ChatMembersService {
+  constructor(@InjectModel(ChatMember.name) private chatMemberModel: Model<ChatMember>) {}
 
-  public async create(chatId: string, userId: string): Promise<ChatMemberInfo> {
+  public async create(chatId: string, userId: string): Promise<ChatMember> {
     const existingChatMember = await this.chatMemberModel.findOne({
       chatId,
       userId,
@@ -35,15 +33,15 @@ export class ChatMemberInfoService {
     return true;
   }
 
-  public async findByIds(chatId: string, userId: string): Promise<ChatMemberInfo | null> {
+  public async findByIds(chatId: string, userId: string): Promise<ChatMember | null> {
     return this.chatMemberModel.findOne({ chatId, userId });
   }
 
-  public async findAllChatMembers(chatId: string): Promise<ChatMemberInfo[]> {
+  public async findAllChatMembers(chatId: string): Promise<ChatMember[]> {
     return this.chatMemberModel.find({ chatId });
   }
 
-  public async findAllMembers(): Promise<ChatMemberInfo[]> {
+  public async findAllMembers(): Promise<ChatMember[]> {
     return this.chatMemberModel.find();
   }
 

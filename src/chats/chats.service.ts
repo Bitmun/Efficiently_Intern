@@ -10,7 +10,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Chat } from './models/chat.model';
 
 import { Model } from 'mongoose';
-import { ChatMemberInfoService } from 'src/chat-member-info/chat-member-info.service';
+import { ChatMembersService } from 'src/chat-members/chat-members.service';
 import { MessagesService } from 'src/messages/messages.service';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class ChatsService {
     @InjectModel(Chat.name) private chatModel: Model<Chat>,
     @Inject(forwardRef(() => MessagesService))
     private readonly msgService: MessagesService,
-    private readonly chatMemberService: ChatMemberInfoService,
+    private readonly chatMemberService: ChatMembersService,
   ) {}
 
   public async create(

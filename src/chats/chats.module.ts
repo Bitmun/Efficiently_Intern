@@ -5,7 +5,7 @@ import { Chat, ChatSchema } from './models/chat.model';
 import { ChatsResolver } from './chats.resolver';
 import { ChatsService } from './chats.service';
 
-import { ChatMemberInfoModule } from 'src/chat-member-info/chat-member-info.module';
+import { ChatMembersModule } from 'src/chat-members/chat-members.module';
 import { MessagesModule } from 'src/messages/messages.module';
 
 @Module({
@@ -14,7 +14,7 @@ import { MessagesModule } from 'src/messages/messages.module';
   imports: [
     MongooseModule.forFeature([{ name: Chat.name, schema: ChatSchema }]),
     MessagesModule,
-    ChatMemberInfoModule,
+    ChatMembersModule,
   ],
 })
 export class ChatsModule {}

@@ -7,7 +7,7 @@ import { MessageDeletedPayload, MessageSendPayload } from './message-subs-payloa
 import { MESSAGE_TRIGGERS } from './message-subs-triggers';
 
 import { Model } from 'mongoose';
-import { ChatMemberInfoService } from 'src/chat-member-info/chat-member-info.service';
+import { ChatMembersService } from 'src/chat-members/chat-members.service';
 import { pubSub } from 'src/pubsub/pubsub.provider';
 import { ContextUser } from 'src/types/contextTypes';
 
@@ -15,7 +15,7 @@ import { ContextUser } from 'src/types/contextTypes';
 export class MessagesService {
   constructor(
     @InjectModel(Message.name) private msgModel: Model<Message>,
-    private readonly chatMemberService: ChatMemberInfoService,
+    private readonly chatMemberService: ChatMembersService,
   ) {}
 
   public async findAll(): Promise<Message[]> {

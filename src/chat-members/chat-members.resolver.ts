@@ -1,21 +1,21 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import { ChatMemberInfo } from './model/chat-member-info.model';
-import { ChatMemberInfoService } from './chat-member-info.service';
+import { ChatMember } from './model/chat-member.model';
+import { ChatMembersService } from './chat-members.service';
 
-@Resolver(() => ChatMemberInfo)
-export class ChatMemberInfoResolver {
-  constructor(private chatMembersService: ChatMemberInfoService) {}
+@Resolver(() => ChatMember)
+export class ChatMembersResolver {
+  constructor(private chatMembersService: ChatMembersService) {}
 
-  @Query(() => [ChatMemberInfo])
+  @Query(() => [ChatMember])
   public async findAllChatsMembers(
     @Args('chatId') chatId: string,
-  ): Promise<ChatMemberInfo[]> {
+  ): Promise<ChatMember[]> {
     return await this.chatMembersService.findAllChatMembers(chatId);
   }
 
-  @Query(() => [ChatMemberInfo])
-  public async findAllMembers(): Promise<ChatMemberInfo[]> {
+  @Query(() => [ChatMember])
+  public async findAllMembers(): Promise<ChatMember[]> {
     return await this.chatMembersService.findAllMembers();
   }
 

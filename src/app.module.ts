@@ -7,7 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
-import { ChatMemberInfoModule } from './chat-member-info/chat-member-info.module';
+import { ChatMembersModule } from './chat-members/chat-members.module';
 import { ChatsModule } from './chats/chats.module';
 import { OnConnectGuard } from './guards/ws-auth.guard';
 import { MessagesModule } from './messages/messages.module';
@@ -47,9 +47,12 @@ import { AppService } from './app.service';
         return { req, res };
       },
     }),
-    MongooseModule.forRoot('mongodb://root:example@localhost:27017', {
-      dbName: 'myDatabase',
-    }),
+    MongooseModule.forRoot(
+      'mongodb+srv://master:pggYHr5quhMudC5w@nestcluster.gahdfkk.mongodb.net/?retryWrites=true&w=majority&appName=NestCluster',
+      {
+        dbName: 'myDatabase',
+      },
+    ),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -67,7 +70,7 @@ import { AppService } from './app.service';
     ProjectsModule,
     ChatsModule,
     MessagesModule,
-    ChatMemberInfoModule,
+    ChatMembersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
