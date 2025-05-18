@@ -8,6 +8,7 @@ import { MESSAGE_TRIGGERS } from './message-subs-triggers';
 
 import { Model } from 'mongoose';
 import { ChatMembersService } from 'src/chat-members/chat-members.service';
+import { INDEXES_NAMES } from 'src/indexes/indexes-names';
 import { pubSub } from 'src/pubsub/pubsub.provider';
 import { ContextUser } from 'src/types/contextTypes';
 
@@ -75,6 +76,34 @@ export class MessagesService {
     return messages;
   }
 
+  public async searchMessagesForUser(query: string, userId: string): Promise<Message[]> {
+    const memberChats = await this.chatMemberService.findAllByUserId(userId);
+
+    const chatIds = memberChats.map((m) => m.chatId);
+
+    if (!chatIds.length) return [];
+
+    return this.msgModel.aggregate([
+      {
+        $search: {
+          index: INDEXES_NAMES.SEARCH_MSGS_ACROSS_CHATS,
+          regex: {
+            query: `(.*)${query}(.*)`,
+            path: 'body',
+            allowAnalyzedField: true,
+          },
+        },
+      },
+      // {
+      //   $match: {
+      //     chatId: { $in: chatIds },
+      //     isDeleted: false,
+      //   },
+      // },
+      { $sort: { createdAt: -1 } },
+    ]);
+  }
+
   public async markMessageAsRead(
     chatId: string,
     userId: string,
@@ -120,5 +149,10 @@ export class MessagesService {
     userId: string,
   ): Promise<any> {
     return this.msgModel.updateMany({ chatId, userId }, { login: '[Deleted User]' });
+  }
+
+  public async deleteAllMessages(): Promise<boolean> {
+    const res = await this.msgModel.deleteMany();
+    return res.deletedCount > 0;
   }
 }

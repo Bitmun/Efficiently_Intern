@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ChatMembersModule } from './chat-members/chat-members.module';
 import { ChatsModule } from './chats/chats.module';
+import { MONGO_CONFIG } from './config/mongo';
 import { OnConnectGuard } from './guards/ws-auth.guard';
 import { MessagesModule } from './messages/messages.module';
 import { Project } from './projects/models/project.model';
@@ -47,12 +48,9 @@ import { AppService } from './app.service';
         return { req, res };
       },
     }),
-    MongooseModule.forRoot(
-      'mongodb+srv://master:pggYHr5quhMudC5w@nestcluster.gahdfkk.mongodb.net/?retryWrites=true&w=majority&appName=NestCluster',
-      {
-        dbName: 'myDatabase',
-      },
-    ),
+    MongooseModule.forRoot(MONGO_CONFIG.uri, {
+      dbName: MONGO_CONFIG.options.dbName,
+    }),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',

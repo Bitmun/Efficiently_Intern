@@ -32,6 +32,15 @@ export class MessagesResolver {
     return await this.msgService.findAll();
   }
 
+  @Query(() => [Message])
+  public async searchMessages(
+    @Args('query') query: string,
+    @Context() context: AuthContext,
+  ): Promise<Message[]> {
+    const { user } = context.req;
+    return await this.msgService.searchMessagesForUser(query, user.id);
+  }
+
   @Mutation(() => Message)
   public async sendMessage(
     @Args('input') input: SendMessageDto,
@@ -44,6 +53,12 @@ export class MessagesResolver {
   @Mutation(() => Message)
   public async deleteMessage(@Args('input') input: DeleteMessageDto): Promise<Message> {
     return await this.msgService.deleteMessage(input.messageId);
+  }
+
+  @Mutation(() => Boolean)
+  public async deleteAllMessages(): Promise<boolean> {
+    await this.msgService.deleteAllMessages();
+    return true;
   }
 
   @Mutation(() => Boolean)

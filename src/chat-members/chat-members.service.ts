@@ -41,6 +41,10 @@ export class ChatMembersService {
     return this.chatMemberModel.find({ chatId });
   }
 
+  public async findAllByUserId(userId: string): Promise<ChatMember[]> {
+    return this.chatMemberModel.find({ userId });
+  }
+
   public async findAllMembers(): Promise<ChatMember[]> {
     return this.chatMemberModel.find();
   }
