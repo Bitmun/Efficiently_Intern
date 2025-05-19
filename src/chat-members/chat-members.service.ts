@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 
 import { ChatMember } from './model/chat-member.model';
 
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 
 @Injectable()
 export class ChatMembersService {
@@ -28,14 +28,6 @@ export class ChatMembersService {
     });
   }
 
-  public async deleteByIds(chatId: string, userId: string): Promise<boolean> {
-    const res = await this.chatMemberModel.findOneAndDelete({ chatId, userId });
-    if (!res) {
-      return false;
-    }
-    return true;
-  }
-
   public async findByIds(chatId: string, userId: string): Promise<ChatMember | null> {
     return this.chatMemberModel.findOne({ chatId, userId });
   }
@@ -47,6 +39,28 @@ export class ChatMembersService {
 
   public async findAllByUserId(userId: string): Promise<ChatMember[]> {
     return this.chatMemberModel.find({ userId });
+  }
+
+  public async findUsersProjectChats(
+    userId: string,
+    projectId: string,
+  ): Promise<Types.ObjectId[]> {
+    const chatMembers = await this.chatMemberModel
+      .find({ userId })
+      .populate('chatId')
+      .exec();
+
+    const chatIds = chatMembers
+      .filter(
+        (chatMember) =>
+          chatMember.chatId &&
+          typeof chatMember.chatId === 'object' &&
+          'projectId' in chatMember.chatId &&
+          chatMember.chatId.projectId?.toString() === projectId,
+      )
+      .map((chatMember) => chatMember.chatId._id);
+
+    return chatIds;
   }
 
   public async findAllMembers(): Promise<ChatMember[]> {
@@ -76,5 +90,13 @@ export class ChatMembersService {
   public async deleteAllMembers(): Promise<boolean> {
     const res = await this.chatMemberModel.deleteMany();
     return res.deletedCount > 0;
+  }
+
+  public async deleteByIds(chatId: string, userId: string): Promise<boolean> {
+    const res = await this.chatMemberModel.findOneAndDelete({ chatId, userId });
+    if (!res) {
+      return false;
+    }
+    return true;
   }
 }

@@ -33,12 +33,13 @@ export class MessagesResolver {
   }
 
   @Query(() => [Message])
-  public async searchMessages(
+  public async searcProjectUsersMessages(
     @Args('query') query: string,
+    @Args('projectId') projectId: string,
     @Context() context: AuthContext,
   ): Promise<Message[]> {
     const { user } = context.req;
-    return await this.msgService.searchMessagesForUser(query, user.id);
+    return await this.msgService.searchUsersProjectMessages(query, projectId, user.id);
   }
 
   @Mutation(() => Message)

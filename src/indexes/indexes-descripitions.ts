@@ -11,12 +11,20 @@ export const SEARCH_MESSAGES_INDEX: SearchIndexDescription = {
         body: {
           type: 'string',
         },
-        // chatId: {
-        //   type: 'string',
-        // },
-        // isDeleted: {
-        //   type: 'boolean',
-        // },
+      },
+    },
+  },
+};
+
+export const SEARCH_CHATS_INDEX: SearchIndexDescription = {
+  name: INDEXES_NAMES.SEARCH_CHATS,
+  definition: {
+    mappings: {
+      dynamic: false,
+      fields: {
+        subject: {
+          type: 'string',
+        },
       },
     },
   },

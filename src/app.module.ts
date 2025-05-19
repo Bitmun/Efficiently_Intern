@@ -18,6 +18,7 @@ import { User } from './users/models/user.model';
 import { UsersModule } from './users/users.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ChatSearchModule } from './chat-search/chat-search.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { AppService } from './app.service';
     ChatsModule,
     MessagesModule,
     ChatMembersModule,
+    ChatSearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -78,10 +78,12 @@ export class MessagesService {
     return messages;
   }
 
-  public async searchMessagesForUser(query: string, userId: string): Promise<Message[]> {
-    const memberChats = await this.chatMemberService.findAllByUserId(userId);
-
-    const chatIds = memberChats.map((m) => m.chatId);
+  public async searchUsersProjectMessages(
+    query: string,
+    projectId: string,
+    userId: string,
+  ): Promise<Message[]> {
+    const chatIds = await this.chatMemberService.findUsersProjectChats(userId, projectId);
 
     if (!chatIds.length) return [];
 

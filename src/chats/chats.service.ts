@@ -11,6 +11,7 @@ import { Chat } from './models/chat.model';
 
 import mongoose, { Model } from 'mongoose';
 import { ChatMembersService } from 'src/chat-members/chat-members.service';
+import { INDEXES_NAMES } from 'src/indexes/indexes-names';
 import { MessagesService } from 'src/messages/messages.service';
 
 @Injectable()
@@ -21,6 +22,26 @@ export class ChatsService {
     private readonly msgService: MessagesService,
     private readonly chatMemberService: ChatMembersService,
   ) {}
+
+  public async searchProjectChats(query: string, projectId: string): Promise<Chat[]> {
+    return this.chatModel.aggregate([
+      {
+        $search: {
+          index: INDEXES_NAMES.SEARCH_CHATS,
+          regex: {
+            query: `(.*)${query}(.*)`,
+            path: 'subject',
+            allowAnalyzedField: true,
+          },
+        },
+      },
+      {
+        $match: {
+          projectId,
+        },
+      },
+    ]);
+  }
 
   public async create(
     projectId: string,
