@@ -97,4 +97,13 @@ export class ProjectsService {
     await this.projectsRepository.delete({ id });
     return true;
   }
+
+  public async deleteAll(): Promise<boolean> {
+    const projects = await this.projectsRepository.find();
+    if (!projects) {
+      return false;
+    }
+    await this.projectsRepository.delete({});
+    return true;
+  }
 }

@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 
 import { Chat } from './models/chat.model';
 
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { ChatMembersService } from 'src/chat-members/chat-members.service';
 import { MessagesService } from 'src/messages/messages.service';
 
@@ -68,7 +68,24 @@ export class ChatsService {
       return false;
     }
 
-    await this.chatMemberService.deleteChatsAllMembers(id);
+    const objectId = new mongoose.Types.ObjectId(id);
+
+    await this.chatMemberService.deleteChatsAllMembers(objectId);
+
+    return true;
+  }
+
+  public async deleteAll(): Promise<boolean> {
+    const chats = await this.chatModel.find();
+    if (!chats) {
+      return false;
+    }
+
+    await Promise.all(
+      chats.map((chat) => this.chatMemberService.deleteChatsAllMembers(chat._id)),
+    );
+
+    await this.chatModel.deleteMany();
 
     return true;
   }
@@ -86,7 +103,9 @@ export class ChatsService {
       return false;
     }
 
-    await this.chatMemberService.create(chatId, userId);
+    const chatObjectId = new mongoose.Types.ObjectId(chatId);
+
+    await this.chatMemberService.create(chatObjectId, userId);
     return true;
   }
 

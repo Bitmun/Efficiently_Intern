@@ -50,6 +50,11 @@ export class ProjectsResolver {
     return this.projectsService.deleteById(id);
   }
 
+  @Mutation(() => Boolean)
+  public deleteAllProjects(): Promise<boolean> {
+    return this.projectsService.deleteAll();
+  }
+
   @Mutation(() => Project)
   public async addMemberToProject(
     @Args('projectId', { type: () => String }) projectId: string,

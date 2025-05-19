@@ -13,8 +13,7 @@ async function run(): Promise<void> {
     const collection = database.collection('messages');
 
     const index = SEARCH_MESSAGES_INDEX;
-    const result = await collection.createSearchIndex(index);
-    console.log(result);
+    const _result = await collection.createSearchIndex(index);
   } finally {
     await client.close();
   }

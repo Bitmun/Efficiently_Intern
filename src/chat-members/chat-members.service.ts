@@ -3,13 +3,16 @@ import { InjectModel } from '@nestjs/mongoose';
 
 import { ChatMember } from './model/chat-member.model';
 
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 @Injectable()
 export class ChatMembersService {
   constructor(@InjectModel(ChatMember.name) private chatMemberModel: Model<ChatMember>) {}
 
-  public async create(chatId: string, userId: string): Promise<ChatMember> {
+  public async create(
+    chatId: mongoose.Types.ObjectId,
+    userId: string,
+  ): Promise<ChatMember> {
     const existingChatMember = await this.chatMemberModel.findOne({
       chatId,
       userId,
@@ -38,7 +41,8 @@ export class ChatMembersService {
   }
 
   public async findAllChatMembers(chatId: string): Promise<ChatMember[]> {
-    return this.chatMemberModel.find({ chatId });
+    const chatObjectId = new mongoose.Types.ObjectId(chatId);
+    return this.chatMemberModel.find({ chatId: chatObjectId });
   }
 
   public async findAllByUserId(userId: string): Promise<ChatMember[]> {
@@ -64,7 +68,7 @@ export class ChatMembersService {
     return true;
   }
 
-  public async deleteChatsAllMembers(chatId: string): Promise<boolean> {
+  public async deleteChatsAllMembers(chatId: mongoose.Types.ObjectId): Promise<boolean> {
     const res = await this.chatMemberModel.deleteMany({ chatId });
     return res.deletedCount > 0;
   }

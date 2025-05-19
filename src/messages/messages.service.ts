@@ -6,7 +6,7 @@ import { Message } from './models/message.model';
 import { MessageDeletedPayload, MessageSendPayload } from './message-subs-payloads';
 import { MESSAGE_TRIGGERS } from './message-subs-triggers';
 
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { ChatMembersService } from 'src/chat-members/chat-members.service';
 import { INDEXES_NAMES } from 'src/indexes/indexes-names';
 import { pubSub } from 'src/pubsub/pubsub.provider';
@@ -28,10 +28,12 @@ export class MessagesService {
     contextUser: ContextUser,
   ): Promise<Message> {
     const { id, login } = contextUser;
+    const { body, chatId } = sendMsgDto;
     const message = await this.msgModel.create({
-      ...sendMsgDto,
       userId: id,
       username: login,
+      body,
+      chatId: new Types.ObjectId(chatId),
     });
 
     const payload: MessageSendPayload = {
@@ -89,17 +91,16 @@ export class MessagesService {
           index: INDEXES_NAMES.SEARCH_MSGS_ACROSS_CHATS,
           regex: {
             query: `(.*)${query}(.*)`,
-            path: 'body',
+            path: ['body'],
             allowAnalyzedField: true,
           },
         },
       },
-      // {
-      //   $match: {
-      //     chatId: { $in: chatIds },
-      //     isDeleted: false,
-      //   },
-      // },
+      {
+        $match: {
+          chatId: { $in: chatIds },
+        },
+      },
       { $sort: { createdAt: -1 } },
     ]);
   }

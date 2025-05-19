@@ -51,4 +51,9 @@ export class ChatsResolver {
   public async deleteChat(@Args('chatId') chatId: string): Promise<boolean> {
     return await this.chatsService.deleteById(chatId);
   }
+
+  @Mutation(() => Boolean)
+  public async deleteAllChats(): Promise<boolean> {
+    return await this.chatsService.deleteAll();
+  }
 }
