@@ -28,6 +28,15 @@ export class MessagesResolver {
   }
 
   @Query(() => [Message])
+  public async findChatsLastMessages(
+    @Args('chatId') chatId: string,
+    @Args('limit') limit: number,
+    @Args('offset') offset: number,
+  ): Promise<Message[]> {
+    return this.msgService.findChatsLastMessages(chatId, limit, offset);
+  }
+
+  @Query(() => [Message])
   public async findAllMessages(): Promise<Message[]> {
     return await this.msgService.findAll();
   }

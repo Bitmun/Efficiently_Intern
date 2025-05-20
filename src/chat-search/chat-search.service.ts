@@ -58,8 +58,6 @@ export class ChatSearchService {
       }
     }
 
-    console.log('msgsSearchResult', msgsSearchResult);
-
     return { chatsSearchRes, msgsSearchResult };
   }
 }

@@ -23,6 +23,18 @@ export class MessagesService {
     return this.msgModel.find();
   }
 
+  public findChatsLastMessages(
+    chatId: Types.ObjectId | string,
+    limit: number,
+    offset: number,
+  ): Promise<Message[]> {
+    return this.msgModel
+      .find({ chatId: new Types.ObjectId(chatId) })
+      .sort({ createdAt: -1 })
+      .skip(offset)
+      .limit(limit);
+  }
+
   public async findChatsLastMessage(chatId: Types.ObjectId): Promise<Message | null> {
     return this.msgModel.findOne({ chatId }).sort({ createdAt: -1 }).limit(1);
   }
