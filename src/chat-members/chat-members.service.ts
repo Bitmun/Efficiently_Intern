@@ -1,13 +1,17 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { ChatMember } from './model/chat-member.model';
 
 import mongoose, { Model, Types } from 'mongoose';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class ChatMembersService {
-  constructor(@InjectModel(ChatMember.name) private chatMemberModel: Model<ChatMember>) {}
+  constructor(
+    @InjectModel(ChatMember.name) private chatMemberModel: Model<ChatMember>,
+    @Inject(RedisService) private readonly redisService: RedisService,
+  ) {}
 
   public async create(
     chatId: mongoose.Types.ObjectId,
@@ -45,6 +49,10 @@ export class ChatMembersService {
     userId: string,
     projectId: string,
   ): Promise<Types.ObjectId[]> {
+    const cachedChats = await this.redisService.getUsersProjectChats(userId, projectId);
+    if (cachedChats) {
+      return cachedChats.map((chat) => new Types.ObjectId(chat));
+    }
     const chatMembers = await this.chatMemberModel
       .find({ userId })
       .populate('chatId')
@@ -60,6 +68,7 @@ export class ChatMembersService {
       )
       .map((chatMember) => chatMember.chatId._id);
 
+    await this.redisService.saveUsersProjectChats(userId, projectId, chatIds);
     return chatIds;
   }
 

@@ -8,17 +8,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
 import { ChatMembersModule } from './chat-members/chat-members.module';
+import { ChatSearchModule } from './chat-search/chat-search.module';
 import { ChatsModule } from './chats/chats.module';
 import { MONGO_CONFIG } from './config/mongo';
 import { OnConnectGuard } from './guards/ws-auth.guard';
 import { MessagesModule } from './messages/messages.module';
 import { Project } from './projects/models/project.model';
 import { ProjectsModule } from './projects/projects.module';
+import { RedisModule } from './redis/redis.module';
 import { User } from './users/models/user.model';
 import { UsersModule } from './users/users.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ChatSearchModule } from './chat-search/chat-search.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { ChatSearchModule } from './chat-search/chat-search.module';
     MessagesModule,
     ChatMembersModule,
     ChatSearchModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

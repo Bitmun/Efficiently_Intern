@@ -27,7 +27,6 @@ services:
     volumes:
     - ./server.json:/pgadmin4/servers.json
 
-
   mongodb:
     image: mongo
     restart: always
@@ -39,3 +38,17 @@ services:
       - ./mongodata:/data/db
     ports:
       - '27017:27017'
+
+  cache:
+    image: redis:8.0.1
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass password
+    volumes: 
+      - cache:/data
+    
+
+volumes:
+  cache:
+    driver: local
