@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 
 import { Chat } from './models/chat.model';
 
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import { ChatMembersService } from 'src/chat-members/chat-members.service';
 import { INDEXES_NAMES } from 'src/indexes/indexes-names';
 import { MessagesService } from 'src/messages/messages.service';
@@ -74,7 +74,7 @@ export class ChatsService {
     return await this.chatModel.find();
   }
 
-  public async findById(id: string): Promise<Chat | null> {
+  public async findById(id: Types.ObjectId): Promise<Chat | null> {
     const chat = await this.chatModel.findById(id);
     if (!chat) {
       return null;

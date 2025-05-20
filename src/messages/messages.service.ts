@@ -23,6 +23,10 @@ export class MessagesService {
     return this.msgModel.find();
   }
 
+  public async findChatsLastMessage(chatId: Types.ObjectId): Promise<Message | null> {
+    return this.msgModel.findOne({ chatId }).sort({ createdAt: -1 }).limit(1);
+  }
+
   public async sendMessage(
     sendMsgDto: SendMessageDto,
     contextUser: ContextUser,

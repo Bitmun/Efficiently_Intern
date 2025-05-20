@@ -5,8 +5,23 @@ import { Message } from 'src/messages/models/message.model';
 
 @ObjectType()
 export class GlobalProjectSearchRes {
-  @Field(() => [Chat])
-  public chats: Chat[];
+  @Field(() => [ChatsSearchRes])
+  public chatsSearchRes: ChatsSearchRes[];
+  @Field(() => [MsgsSearchRes])
+  public msgsSearchResult: MsgsSearchRes[];
+}
+@ObjectType()
+export class MsgsSearchRes {
+  @Field(() => Chat)
+  public chat: Chat;
   @Field(() => [Message])
-  public messages: Message[];
+  public foundChatMessages: Message[];
+}
+
+@ObjectType()
+export class ChatsSearchRes {
+  @Field(() => Chat)
+  public chat: Chat;
+  @Field(() => Message, { nullable: true })
+  public lastMessage: Message | null;
 }
