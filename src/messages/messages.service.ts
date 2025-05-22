@@ -7,9 +7,11 @@ import { MessageDeletedPayload, MessageSendPayload } from './message-subs-payloa
 import { MESSAGE_TRIGGERS } from './message-subs-triggers';
 
 import { Model, Types } from 'mongoose';
+import { EventBridgeService } from 'src/aws/eventbridge/eventbridge.service';
 import { ChatMembersService } from 'src/chat-members/chat-members.service';
 import { INDEXES_NAMES } from 'src/indexes/indexes-names';
 import { pubSub } from 'src/pubsub/pubsub.provider';
+import { RedisService } from 'src/redis/redis.service';
 import { ContextUser } from 'src/types/contextTypes';
 
 @Injectable()
@@ -17,6 +19,8 @@ export class MessagesService {
   constructor(
     @InjectModel(Message.name) private msgModel: Model<Message>,
     private readonly chatMemberService: ChatMembersService,
+    private readonly redisService: RedisService,
+    private readonly eventBridgeService: EventBridgeService,
   ) {}
 
   public async findAll(): Promise<Message[]> {
@@ -26,13 +30,27 @@ export class MessagesService {
   public findChatsLastMessages(
     chatId: Types.ObjectId | string,
     limit: number,
-    offset: number,
+    _offset: number,
   ): Promise<Message[]> {
-    return this.msgModel
-      .find({ chatId: new Types.ObjectId(chatId) })
-      .sort({ createdAt: -1 })
-      .skip(offset)
-      .limit(limit);
+    const cachedMessages = this.redisService.findChatsLastMessages(
+      chatId.toString(),
+      limit,
+    );
+    return cachedMessages;
+  }
+
+  public async create(
+    sendMsgDto: SendMessageDto,
+    contextUser: ContextUser,
+  ): Promise<Message> {
+    const { id, login } = contextUser;
+    const { body, chatId } = sendMsgDto;
+    return await this.msgModel.create({
+      userId: id,
+      username: login,
+      body,
+      chatId: new Types.ObjectId(chatId),
+    });
   }
 
   public async findChatsLastMessage(chatId: Types.ObjectId): Promise<Message | null> {
@@ -43,14 +61,18 @@ export class MessagesService {
     sendMsgDto: SendMessageDto,
     contextUser: ContextUser,
   ): Promise<Message> {
-    const { id, login } = contextUser;
-    const { body, chatId } = sendMsgDto;
-    const message = await this.msgModel.create({
-      userId: id,
-      username: login,
-      body,
+    const { chatId } = sendMsgDto;
+
+    const message = new this.msgModel({
+      userId: contextUser.id,
+      username: contextUser.login,
+      body: sendMsgDto.body,
       chatId: new Types.ObjectId(chatId),
     });
+
+    await this.redisService.sendMessageToChat(chatId, message);
+
+    await this.eventBridgeService.publishMessageEvent(message);
 
     const payload: MessageSendPayload = {
       messageSend: message,

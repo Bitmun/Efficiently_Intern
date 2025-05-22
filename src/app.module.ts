@@ -7,6 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
+import { AwsModule } from './aws/aws.module';
 import { ChatMembersModule } from './chat-members/chat-members.module';
 import { ChatSearchModule } from './chat-search/chat-search.module';
 import { ChatsModule } from './chats/chats.module';
@@ -73,6 +74,7 @@ import { AppService } from './app.service';
     ChatMembersModule,
     ChatSearchModule,
     RedisModule,
+    AwsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

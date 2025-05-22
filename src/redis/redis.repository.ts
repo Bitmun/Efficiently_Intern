@@ -22,6 +22,23 @@ export class RedisRepository implements OnModuleDestroy {
     await this.redisClient.del(`${prefix}:${key}`);
   }
 
+  public async lpush(
+    prefix: string,
+    key: string,
+    value: string[] | number[],
+  ): Promise<void> {
+    await this.redisClient.lpush(`${prefix}:${key}`, ...value);
+  }
+
+  public async lrange(
+    prefix: string,
+    key: string,
+    start: number,
+    end: number,
+  ): Promise<string[]> {
+    return this.redisClient.lrange(`${prefix}:${key}`, start, end);
+  }
+
   public async setWithExpiry(
     prefix: string,
     key: string,
