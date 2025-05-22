@@ -20,7 +20,7 @@ export class EventBridgeService {
             Source: 'chat-app.messages',
             DetailType: 'NewMessage',
             Detail: JSON.stringify(message),
-            EventBusName: 'default',
+            EventBusName: 'chat-bus',
           },
         ],
       }),

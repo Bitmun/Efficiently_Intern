@@ -12,7 +12,7 @@ awslocal events put-rule \
     "source": ["chat-app.messages"],
     "detail-type": ["NewMessage"]
   }' \
-  --event-bus-name default
+  --event-bus-name chat-bus
 
 awslocal sqs add-permission \
   --queue-url http://localhost:4566/000000000000/chat-message-queue \
@@ -24,7 +24,7 @@ QUEUE_ARN=$(awslocal sqs get-queue-attributes --queue-url http://localhost:4566/
 
 awslocal events put-targets \
   --rule ChatMessageRule \
-  --event-bus-name default \
+  --event-bus-name chat-bus \
   --targets '[
     {
       "Id": "Target0",

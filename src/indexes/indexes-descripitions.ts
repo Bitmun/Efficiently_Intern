@@ -29,9 +29,3 @@ export const SEARCH_CHATS_INDEX: SearchIndexDescription = {
     },
   },
 };
-
-// chatId обычным индексом
-// поиск чатов по subject вместе с msgs
-// schema for chat
-// aggreg pipline операторы
-// создать модуль для общего поиска, делать 2 агререйта для chat subj, msgs. Отображаем в виде чата, с искомым сообщением
