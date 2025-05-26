@@ -11,7 +11,6 @@ import { AwsModule } from './aws/aws.module';
 import { ChatMembersModule } from './chat-members/chat-members.module';
 import { ChatSearchModule } from './chat-search/chat-search.module';
 import { ChatsModule } from './chats/chats.module';
-import { MONGO_CONFIG } from './config/mongo';
 import { OnConnectGuard } from './guards/ws-auth.guard';
 import { MessagesModule } from './messages/messages.module';
 import { Project } from './projects/models/project.model';
@@ -51,17 +50,21 @@ import { AppService } from './app.service';
         return { req, res };
       },
     }),
-    MongooseModule.forRoot(MONGO_CONFIG.uri, {
-      dbName: MONGO_CONFIG.options.dbName,
-    }),
+    MongooseModule.forRoot(
+      process.env.MONGO_URI ??
+        'mongodb://master:pggYHr5quhMudC5w@nestcluster.gahdfkk.mongodb.net/myDatabase?authSource=admin',
+      {
+        dbName: process.env.MONGO_DB ?? 'myDatabase',
+      },
+    ),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'postgres',
+      host: process.env.POSTGRES_HOST,
+      port: parseInt(process.env.POSTGRES_PORT ?? '5432', 10),
+      username: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DB,
       entities: [User, Project],
       synchronize: true,
       autoLoadEntities: true,

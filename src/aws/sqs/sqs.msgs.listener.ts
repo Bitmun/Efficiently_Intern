@@ -4,6 +4,7 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Model, Types } from 'mongoose';
@@ -11,17 +12,24 @@ import { Message } from 'src/messages/models/message.model';
 
 @Injectable()
 export class MessageWorkerService implements OnModuleInit {
-  private readonly sqsClient = new SQSClient({
-    region: 'us-east-1',
-    endpoint: 'http://localhost:4566',
-    credentials: {
-      accessKeyId: 'test',
-      secretAccessKey: 'test',
-    },
-  });
-  private readonly queueUrl = 'http://localhost:4566/000000000000/chat-message-queue';
+  private readonly sqsClient: SQSClient;
 
-  constructor(@InjectModel(Message.name) private readonly msgModel: Model<Message>) {}
+  constructor(
+    @InjectModel(Message.name) private readonly msgModel: Model<Message>,
+    private configService: ConfigService,
+  ) {
+    this.sqsClient = new SQSClient({
+      region: this.configService.get<string>('AWS_REGION') ?? 'us-east-1',
+      endpoint:
+        this.configService.get<string>('AWS_ENDPOINT') ?? 'http://localstack:4566',
+      credentials: {
+        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID') ?? 'test',
+        secretAccessKey:
+          this.configService.get<string>('AWS_SECRET_ACCESS_KEY') ?? 'test',
+      },
+    });
+  }
+  private readonly queueUrl = 'http://localstack:4566/000000000000/chat-message-queue';
 
   public onModuleInit(): void {
     void this.poll();
