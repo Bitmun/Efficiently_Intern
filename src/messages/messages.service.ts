@@ -23,20 +23,84 @@ export class MessagesService {
     private readonly eventBridgeService: EventBridgeService,
   ) {}
 
+  public getModel(body: string, chatId: string, contextUser: ContextUser): Message {
+    return new this.msgModel({
+      userId: contextUser.id,
+      username: contextUser.login,
+      body: body,
+      chatId: new Types.ObjectId(chatId),
+    });
+  }
+
   public async findAll(): Promise<Message[]> {
     return this.msgModel.find();
   }
 
-  public findChatsLastMessages(
-    chatId: Types.ObjectId | string,
-    limit: number,
-    _offset: number,
+  public async findChatsLastMessage(chatId: Types.ObjectId): Promise<Message | null> {
+    return this.msgModel.findOne({ chatId }).sort({ createdAt: -1 }).limit(1);
+  }
+
+  public async searchMessagesInChat(chatId: string, query: string): Promise<any> {
+    const messages = await this.msgModel.find({
+      chatId,
+      text: { $regex: query, $options: 'i' },
+    });
+
+    if (!messages) {
+      throw new NotFoundException('Messages not found');
+    }
+
+    return messages;
+  }
+
+  public async searchUsersProjectMessages(
+    query: string,
+    projectId: string,
+    userId: string,
   ): Promise<Message[]> {
-    const cachedMessages = this.redisService.findChatsLastMessages(
-      chatId.toString(),
-      limit,
+    const chatIds = await this.chatMemberService.findUsersProjectChats(userId, projectId);
+
+    if (!chatIds.length) return [];
+
+    return this.msgModel.aggregate([
+      {
+        $search: {
+          index: INDEXES_NAMES.SEARCH_MSGS_ACROSS_CHATS,
+          regex: {
+            query: `(.*)${query}(.*)`,
+            path: ['body'],
+            allowAnalyzedField: true,
+          },
+        },
+      },
+      {
+        $match: {
+          chatId: { $in: chatIds },
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ]);
+  }
+
+  public async countUnreadMessages(chatId: string, userId: string): Promise<number> {
+    const member = await this.chatMemberService.findByIds(
+      new Types.ObjectId(chatId),
+      userId,
     );
-    return cachedMessages;
+
+    if (!member) {
+      throw new NotFoundException('Chat member not found');
+    }
+
+    const filter: { chatId: string; createdAt?: { $gt: Date } } = { chatId };
+    if (member.lastReadMsgId) {
+      const lastReadMessage = await this.msgModel.findById(member.lastReadMsgId);
+      if (lastReadMessage) {
+        filter.createdAt = { $gt: lastReadMessage.createdAt };
+      }
+    }
+
+    return await this.msgModel.countDocuments(filter);
   }
 
   public async create(
@@ -53,8 +117,37 @@ export class MessagesService {
     });
   }
 
-  public async findChatsLastMessage(chatId: Types.ObjectId): Promise<Message | null> {
-    return this.msgModel.findOne({ chatId }).sort({ createdAt: -1 }).limit(1);
+  public async markMessageAsRead(
+    chatId: string,
+    userId: string,
+    messageId: string,
+  ): Promise<void> {
+    const member = await this.chatMemberService.findByIds(
+      new Types.ObjectId(chatId),
+      userId,
+    );
+
+    if (!member) {
+      throw new NotFoundException('Chat member not found');
+    }
+
+    member.lastReadMsgId = messageId;
+    await member.save();
+  }
+
+  public async markChatAsRead(chatId: string, userId: string): Promise<void> {
+    const lastMessage = await this.msgModel.findOne({ chatId }).sort({ createdAt: -1 });
+
+    if (!lastMessage) return;
+
+    await this.chatMemberService.updateLastMsg(chatId, userId, lastMessage._id);
+  }
+
+  public async updateMessagesForRemovedUser(
+    chatId: Types.ObjectId,
+    userId: string,
+  ): Promise<any> {
+    return this.msgModel.updateMany({ chatId, userId }, { username: '[Deleted User]' });
   }
 
   public async sendMessage(
@@ -103,97 +196,13 @@ export class MessagesService {
     return message;
   }
 
-  public async searchMessagesInChat(chatId: string, query: string): Promise<any> {
-    const messages = await this.msgModel.find({
-      chatId,
-      text: { $regex: query, $options: 'i' },
-    });
-
-    if (!messages) {
-      throw new NotFoundException('Messages not found');
-    }
-
-    return messages;
-  }
-
-  public async searchUsersProjectMessages(
-    query: string,
-    projectId: string,
-    userId: string,
-  ): Promise<Message[]> {
-    const chatIds = await this.chatMemberService.findUsersProjectChats(userId, projectId);
-
-    if (!chatIds.length) return [];
-
-    return this.msgModel.aggregate([
-      {
-        $search: {
-          index: INDEXES_NAMES.SEARCH_MSGS_ACROSS_CHATS,
-          regex: {
-            query: `(.*)${query}(.*)`,
-            path: ['body'],
-            allowAnalyzedField: true,
-          },
-        },
-      },
-      {
-        $match: {
-          chatId: { $in: chatIds },
-        },
-      },
-      { $sort: { createdAt: -1 } },
-    ]);
-  }
-
-  public async markMessageAsRead(
-    chatId: string,
-    userId: string,
-    messageId: string,
-  ): Promise<void> {
-    const member = await this.chatMemberService.findByIds(chatId, userId);
-
-    if (!member) {
-      throw new NotFoundException('Chat member not found');
-    }
-
-    member.lastReadMsgId = messageId;
-    await member.save();
-  }
-
-  public async markChatAsRead(chatId: string, userId: string): Promise<void> {
-    const lastMessage = await this.msgModel.findOne({ chatId }).sort({ createdAt: -1 });
-
-    if (!lastMessage) return;
-
-    await this.chatMemberService.updateLastMsg(chatId, userId, lastMessage._id);
-  }
-
-  public async countUnreadMessages(chatId: string, userId: string): Promise<number> {
-    const member = await this.chatMemberService.findByIds(chatId, userId);
-    if (!member) {
-      throw new NotFoundException('Chat member not found');
-    }
-
-    const filter: { chatId: string; createdAt?: { $gt: Date } } = { chatId };
-    if (member.lastReadMsgId) {
-      const lastReadMessage = await this.msgModel.findById(member.lastReadMsgId);
-      if (lastReadMessage) {
-        filter.createdAt = { $gt: lastReadMessage.createdAt };
-      }
-    }
-
-    return await this.msgModel.countDocuments(filter);
-  }
-
-  public async updateMessagesForRemovedUser(
-    chatId: string,
-    userId: string,
-  ): Promise<any> {
-    return this.msgModel.updateMany({ chatId, userId }, { login: '[Deleted User]' });
-  }
-
   public async deleteAllMessages(): Promise<boolean> {
     const res = await this.msgModel.deleteMany();
+    return res.deletedCount > 0;
+  }
+
+  public async deleteChatsMessages(chatId: Types.ObjectId): Promise<boolean> {
+    const res = await this.msgModel.deleteMany({ chatId });
     return res.deletedCount > 0;
   }
 }

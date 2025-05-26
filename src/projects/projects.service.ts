@@ -6,6 +6,7 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './models/project.model';
 
 import { ChatsService } from 'src/chats/chats.service';
+import { Chat } from 'src/chats/models/chat.model';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 
@@ -17,6 +18,29 @@ export class ProjectsService {
     private usersService: UsersService,
     private chatsService: ChatsService,
   ) {}
+
+  public async findAll(): Promise<Project[]> {
+    return this.projectsRepository.find({ relations: ['creator', 'members'] });
+  }
+
+  public async findById(id: string): Promise<Project | null> {
+    return this.projectsRepository.findOne({
+      where: { id },
+      relations: ['creator', 'members'],
+    });
+  }
+
+  public async searchProjectsChats(
+    projectId: string,
+    query: string,
+  ): Promise<Chat[] | null> {
+    const project = await this.findById(projectId);
+    if (!project) {
+      throw new NotFoundException('Project not found for search');
+    }
+
+    return this.chatsService.searchProjectChats(projectId, query);
+  }
 
   public async create(
     creatorId: string,
@@ -34,22 +58,27 @@ export class ProjectsService {
 
     const savedProject = await this.projectsRepository.save(project);
 
-    const { id, creator_id } = savedProject;
-
-    await this.chatsService.create(id, [creator_id], 'general');
-
     return savedProject;
   }
 
-  public async findAll(): Promise<Project[]> {
-    return this.projectsRepository.find({ relations: ['creator', 'members'] });
-  }
+  public async createProjectChat(
+    projectId: string,
+    members: string[],
+    subject: string,
+  ): Promise<Chat> {
+    const existingProject = await this.findById(projectId);
 
-  public async findById(id: string): Promise<Project | null> {
-    return this.projectsRepository.findOne({
-      where: { id },
-      relations: ['creator', 'members'],
-    });
+    if (!existingProject) {
+      throw new NotFoundException('Project not found to create chat');
+    }
+
+    const chat = await this.chatsService.create(projectId, members, subject);
+
+    if (!chat) {
+      throw new BadRequestException('Failed to create chat for project');
+    }
+
+    return chat;
   }
 
   public async addMemberToProject(projectId: string, userId: string): Promise<Project> {

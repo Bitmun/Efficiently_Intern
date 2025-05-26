@@ -15,7 +15,7 @@ export class UsersResolver {
   constructor(private usersService: UsersService) {}
 
   @Query(() => User)
-  public async getUser(
+  public async findUser(
     @Args('input', { type: () => GetUserDto }) input: GetUserDto,
   ): Promise<User | null> {
     const { id } = input;

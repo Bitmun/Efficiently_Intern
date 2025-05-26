@@ -7,6 +7,7 @@ import { ChatsService } from './chats.service';
 
 import { ChatMembersModule } from 'src/chat-members/chat-members.module';
 import { MessagesModule } from 'src/messages/messages.module';
+import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
   providers: [ChatsResolver, ChatsService],
@@ -15,6 +16,7 @@ import { MessagesModule } from 'src/messages/messages.module';
     MongooseModule.forFeature([{ name: Chat.name, schema: ChatSchema }]),
     MessagesModule,
     ChatMembersModule,
+    RedisModule,
   ],
 })
 export class ChatsModule {}

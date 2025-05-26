@@ -6,6 +6,8 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './models/project.model';
 import { ProjectsService } from './projects.service';
 
+import { CreateChatDto } from 'src/chats/dto/create-chat.dto';
+import { Chat } from 'src/chats/models/chat.model';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { RlsInterceptor } from 'src/interceptors/RlsInterceptor';
 import { AuthContext } from 'src/types/contextTypes';
@@ -30,11 +32,32 @@ export class ProjectsResolver {
     return this.projectsService.findAll();
   }
 
+  @Query(() => [Chat])
+  public searchProjectsChats(
+    @Args('projectId', { type: () => String }) projectId: string,
+    @Args('query', { type: () => String }) query: string,
+  ): Promise<Chat[] | null> {
+    return this.projectsService.searchProjectsChats(projectId, query);
+  }
+
   @Query(() => Project)
-  public getProject(
+  public findProject(
     @Args('id', { type: () => String }) id: string,
   ): Promise<Project | null> {
     return this.projectsService.findById(id);
+  }
+
+  @Mutation(() => Chat)
+  public async createProjectChat(
+    @Args('input', { type: () => CreateChatDto }) input: CreateChatDto,
+    @Context() context: AuthContext,
+  ): Promise<Chat> {
+    const { projectId, memberIds, subject } = input;
+
+    const { id } = context.req.user;
+
+    const members = [id, ...(memberIds || [])];
+    return await this.projectsService.createProjectChat(projectId, members, subject);
   }
 
   @Mutation(() => Project)

@@ -13,32 +13,15 @@ export class ChatMembersService {
     @Inject(RedisService) private readonly redisService: RedisService,
   ) {}
 
-  public async create(
-    chatId: mongoose.Types.ObjectId,
+  public async findByIds(
+    chatId: Types.ObjectId,
     userId: string,
-  ): Promise<ChatMember> {
-    const existingChatMember = await this.chatMemberModel.findOne({
-      chatId,
-      userId,
-    });
-
-    if (existingChatMember) {
-      throw new BadRequestException('User already in chat');
-    }
-
-    return this.chatMemberModel.create({
-      chatId,
-      userId,
-    });
-  }
-
-  public async findByIds(chatId: string, userId: string): Promise<ChatMember | null> {
+  ): Promise<ChatMember | null> {
     return this.chatMemberModel.findOne({ chatId, userId });
   }
 
-  public async findAllChatMembers(chatId: string): Promise<ChatMember[]> {
-    const chatObjectId = new mongoose.Types.ObjectId(chatId);
-    return this.chatMemberModel.find({ chatId: chatObjectId });
+  public async findAllChatMembers(chatId: Types.ObjectId): Promise<ChatMember[]> {
+    return this.chatMemberModel.find({ chatId });
   }
 
   public async findAllByUserId(userId: string): Promise<ChatMember[]> {
@@ -49,10 +32,10 @@ export class ChatMembersService {
     userId: string,
     projectId: string,
   ): Promise<Types.ObjectId[]> {
-    const cachedChats = await this.redisService.getUsersProjectChats(userId, projectId);
-    if (cachedChats) {
-      return cachedChats.map((chat) => new Types.ObjectId(chat));
-    }
+    // const cachedChats = await this.redisService.getUsersProjectChats(userId, projectId);
+    // if (cachedChats) {
+    //   return cachedChats.map((chat) => new Types.ObjectId(chat));
+    // }
     const chatMembers = await this.chatMemberModel
       .find({ userId })
       .populate('chatId')
@@ -74,6 +57,25 @@ export class ChatMembersService {
 
   public async findAllMembers(): Promise<ChatMember[]> {
     return this.chatMemberModel.find();
+  }
+
+  public async create(
+    chatId: mongoose.Types.ObjectId,
+    userId: string,
+  ): Promise<ChatMember> {
+    const existingChatMember = await this.chatMemberModel.findOne({
+      chatId,
+      userId,
+    });
+
+    if (existingChatMember) {
+      throw new BadRequestException('User already in chat');
+    }
+
+    return this.chatMemberModel.create({
+      chatId,
+      userId,
+    });
   }
 
   public async updateLastMsg(
@@ -101,7 +103,7 @@ export class ChatMembersService {
     return res.deletedCount > 0;
   }
 
-  public async deleteByIds(chatId: string, userId: string): Promise<boolean> {
+  public async deleteByIds(chatId: Types.ObjectId, userId: string): Promise<boolean> {
     const res = await this.chatMemberModel.findOneAndDelete({ chatId, userId });
     if (!res) {
       return false;

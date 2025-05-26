@@ -3,7 +3,6 @@ import { UseGuards } from '@nestjs/common';
 import { Args, Context, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 
 import { DeleteMessageDto } from './dto/delete-message.dto';
-import { SendMessageDto } from './dto/send-message.dto';
 import { Message } from './models/message.model';
 import { MessageDeletedPayload, MessageSendPayload } from './message-subs-payloads';
 import { MESSAGE_TRIGGERS } from './message-subs-triggers';
@@ -28,15 +27,6 @@ export class MessagesResolver {
   }
 
   @Query(() => [Message])
-  public async findChatsLastMessages(
-    @Args('chatId') chatId: string,
-    @Args('limit') limit: number,
-    @Args('offset') offset: number,
-  ): Promise<Message[]> {
-    return this.msgService.findChatsLastMessages(chatId, limit, offset);
-  }
-
-  @Query(() => [Message])
   public async findAllMessages(): Promise<Message[]> {
     return await this.msgService.findAll();
   }
@@ -49,15 +39,6 @@ export class MessagesResolver {
   ): Promise<Message[]> {
     const { user } = context.req;
     return await this.msgService.searchUsersProjectMessages(query, projectId, user.id);
-  }
-
-  @Mutation(() => Message)
-  public async sendMessage(
-    @Args('input') input: SendMessageDto,
-    @Context() context: AuthContext,
-  ): Promise<Message> {
-    const { user } = context.req;
-    return await this.msgService.sendMessage(input, user);
   }
 
   @Mutation(() => Message)

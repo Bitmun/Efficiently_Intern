@@ -1,34 +1,37 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 
-import { CreateChatDto } from './dto/create-chat.dto';
 import { Chat } from './models/chat.model';
 import { ChatsService } from './chats.service';
 
+import { ChatMember } from 'src/chat-members/model/chat-member.model';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { Message } from 'src/messages/models/message.model';
 import { AuthContext } from 'src/types/contextTypes';
 
 @UseGuards(AuthGuard)
 @Resolver(() => Chat)
 export class ChatsResolver {
-  constructor(private chatsService: ChatsService) {}
+  constructor(private readonly chatsService: ChatsService) {}
 
   @Query(() => [Chat])
   public async findAllChats(): Promise<Chat[]> {
     return await this.chatsService.findAll();
   }
 
-  @Mutation(() => Chat)
-  public async createChat(
-    @Args('input', { type: () => CreateChatDto }) input: CreateChatDto,
-    @Context() context: AuthContext,
-  ): Promise<Chat> {
-    const { projectId, memberIds, subject } = input;
+  @Query(() => [Message])
+  public async findChatsLastMessages(
+    @Args('chatId') chatId: string,
+    @Args('limit') limit: number,
+  ): Promise<Message[]> {
+    return this.chatsService.findChatsLastMessages(chatId, limit);
+  }
 
-    const { id } = context.req.user;
-
-    const members = [id, ...(memberIds || [])];
-    return await this.chatsService.create(projectId, members, subject);
+  @Query(() => [ChatMember])
+  public async findAllChatsMembers(
+    @Args('chatId') chatId: string,
+  ): Promise<ChatMember[]> {
+    return await this.chatsService.findChatsMembers(chatId);
   }
 
   @Mutation(() => Boolean)
@@ -37,6 +40,16 @@ export class ChatsResolver {
     @Args('userId') userId: string,
   ): Promise<boolean> {
     return await this.chatsService.addUserToChat(chatId, userId);
+  }
+
+  @Mutation(() => Message)
+  public async sendMessageToChat(
+    @Args('chatId') chatId: string,
+    @Args('body') body: string,
+    @Context() context: AuthContext,
+  ): Promise<Message> {
+    const { user } = context.req;
+    return await this.chatsService.sendMessageToChat(chatId, user, body);
   }
 
   @Mutation(() => Boolean)

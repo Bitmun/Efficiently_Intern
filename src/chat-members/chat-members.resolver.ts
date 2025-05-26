@@ -14,13 +14,6 @@ export class ChatMembersResolver {
   constructor(private chatMembersService: ChatMembersService) {}
 
   @Query(() => [ChatMember])
-  public async findAllChatsMembers(
-    @Args('chatId') chatId: string,
-  ): Promise<ChatMember[]> {
-    return await this.chatMembersService.findAllChatMembers(chatId);
-  }
-
-  @Query(() => [ChatMember])
   public async findAllMembers(): Promise<ChatMember[]> {
     return await this.chatMembersService.findAllMembers();
   }

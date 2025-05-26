@@ -63,7 +63,7 @@ import { AppService } from './app.service';
       password: 'postgres',
       database: 'postgres',
       entities: [User, Project],
-      synchronize: false,
+      synchronize: true,
       autoLoadEntities: true,
     }),
     UsersModule,
