@@ -37,9 +37,10 @@ export class UsersResolver {
 
   @Mutation(() => User)
   public async updateUser(
+    @Args('id', { type: () => String }) id: string,
     @Args('input', { type: () => UpdateUserDto }) input: UpdateUserDto,
   ): Promise<User | null> {
-    const { id, login, password } = input;
+    const { login, password } = input;
     return this.usersService.updateById(id, {
       login,
       password,
