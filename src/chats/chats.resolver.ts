@@ -23,8 +23,9 @@ export class ChatsResolver {
   public async findChatsLastMessages(
     @Args('chatId') chatId: string,
     @Args('limit') limit: number,
+    @Args('offset') offset: number,
   ): Promise<Message[]> {
-    return this.chatsService.findChatsLastMessages(chatId, limit);
+    return this.chatsService.findChatsLastMessages(chatId, limit, offset);
   }
 
   @Query(() => [ChatMember])

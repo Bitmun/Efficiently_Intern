@@ -41,6 +41,18 @@ export class MessagesService {
     return this.msgModel.findOne({ chatId }).sort({ createdAt: -1 }).limit(1);
   }
 
+  public async findChatsMessages(
+    chatId: Types.ObjectId,
+    limit = 20,
+    offset = 0,
+  ): Promise<Message[]> {
+    return this.msgModel
+      .find({ chatId })
+      .sort({ createdAt: -1 })
+      .skip(offset)
+      .limit(limit);
+  }
+
   public async searchMessagesInChat(chatId: string, query: string): Promise<any> {
     const messages = await this.msgModel.find({
       chatId,

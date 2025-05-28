@@ -39,11 +39,15 @@ export class RedisService {
     );
   }
 
-  public async findChatsLastMessages(chatId: string, limit = 20): Promise<Message[]> {
+  public async findChatsLastMessages(
+    chatId: string,
+    offset = 0,
+    limit = 20,
+  ): Promise<Message[]> {
     const rawMessages = await this.redisRepository.lrange(
       RedisPrefixEnum.SEND_MESSAGE,
       chatId,
-      0,
+      offset,
       limit - 1,
     );
     return rawMessages.map((m) => JSON.parse(m) as Message);

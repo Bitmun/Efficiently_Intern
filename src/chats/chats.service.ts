@@ -68,6 +68,7 @@ export class ChatsService {
   public async findChatsLastMessages(
     chatId: Types.ObjectId | string,
     limit: number,
+    offset: number,
   ): Promise<Message[]> {
     const existingChat = await this.findById(new Types.ObjectId(chatId));
 
@@ -75,7 +76,17 @@ export class ChatsService {
       throw new NotFoundException('Chat not found');
     }
 
-    return this.redisService.findChatsLastMessages(chatId.toString(), limit);
+    const cachedMsgs = await this.redisService.findChatsLastMessages(
+      chatId.toString(),
+      limit,
+      offset,
+    );
+
+    if (cachedMsgs.length >= limit) {
+      return cachedMsgs;
+    }
+
+    return this.msgService.findChatsMessages(existingChat._id, limit, offset);
   }
 
   public async create(
