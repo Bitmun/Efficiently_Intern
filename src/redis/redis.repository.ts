@@ -47,4 +47,8 @@ export class RedisRepository implements OnModuleDestroy {
   ): Promise<void> {
     await this.redisClient.set(`${prefix}:${key}`, value, 'EX', expiry);
   }
+
+  public async expire(prefix: string, key: string, seconds: number): Promise<void> {
+    await this.redisClient.expire(`${prefix}:${key}`, seconds);
+  }
 }

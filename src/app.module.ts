@@ -52,7 +52,7 @@ import { AppService } from './app.service';
     }),
     MongooseModule.forRoot(
       process.env.MONGO_URI ??
-        'mongodb://master:pggYHr5quhMudC5w@nestcluster.gahdfkk.mongodb.net/myDatabase?authSource=admin',
+        'mongodb+srv://master:pggYHr5quhMudC5w@nestcluster.gahdfkk.mongodb.net/?retryWrites=true&w=majority&appName=NestCluster',
       {
         dbName: process.env.MONGO_DB ?? 'myDatabase',
       },

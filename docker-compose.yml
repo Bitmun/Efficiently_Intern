@@ -46,30 +46,30 @@ services:
       - '4566:4566'
       - '4571:4571'
     environment:
-      - SERVICES=sqs,events
+      - SERVICES=sqs,events,scheduler
       - DEBUG=${DEBUG:-0}
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
       - './localstack/init:/etc/localstack/init/ready.d'
       - "/var/run/docker.sock:/var/run/docker.sock"
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: nest-app
-    restart: always
-    ports:
-      - '3000:3000'
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    env_file:
-      - .env
-    depends_on:
-      - db
-      - cache
-      - localstack
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: nest-app
+  #   restart: always
+  #   ports:
+  #     - '3000:3000'
+  #   volumes:
+  #     - .:/usr/src/app
+  #     - /usr/src/app/node_modules
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - db
+  #     - cache
+  #     - localstack
 
 volumes:
   cache:

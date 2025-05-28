@@ -28,6 +28,7 @@ export class RedisService {
     await this.redisRepository.lpush(RedisPrefixEnum.SEND_MESSAGE, chatId, [
       JSON.stringify(message),
     ]);
+    await this.redisRepository.expire(RedisPrefixEnum.SEND_MESSAGE, chatId, 60);
   }
 
   public async findChatsLastMessages(chatId: string, limit = 20): Promise<Message[]> {

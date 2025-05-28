@@ -7,11 +7,11 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { Message } from 'src/messages/models/message.model';
 
 @Injectable()
-export class MessageWorkerService implements OnModuleInit {
+export class MessagesSyncService implements OnModuleInit {
   private readonly sqsClient: SQSClient;
 
   constructor(
@@ -29,7 +29,7 @@ export class MessageWorkerService implements OnModuleInit {
       },
     });
   }
-  private readonly queueUrl = 'http://localstack:4566/000000000000/chat-message-queue';
+  private readonly queueUrl = 'http://localstack:4566/000000000000/message-sync-queue';
 
   public onModuleInit(): void {
     void this.poll();
@@ -41,22 +41,24 @@ export class MessageWorkerService implements OnModuleInit {
         new ReceiveMessageCommand({
           QueueUrl: this.queueUrl,
           MaxNumberOfMessages: 10,
-          WaitTimeSeconds: 20,
+          WaitTimeSeconds: 5,
         }),
       );
+
+      console.log('Received messages:', response.Messages);
 
       if (!response.Messages) continue;
 
       for (const msg of response.Messages) {
-        const parsedBody = JSON.parse(msg.Body!) as { detail: Message };
+        // const parsedBody = JSON.parse(msg.Body!) as { detail: Message };
 
-        const messageBody = parsedBody.detail;
+        // const messageBody = parsedBody.detail;
 
-        await this.msgModel.create({
-          ...messageBody,
-          _id: new Types.ObjectId(messageBody._id),
-          chatId: new Types.ObjectId(messageBody.chatId),
-        });
+        // await this.msgModel.create({
+        //   ...messageBody,
+        //   _id: new Types.ObjectId(messageBody._id),
+        //   chatId: new Types.ObjectId(messageBody.chatId),
+        // });
 
         await this.sqsClient.send(
           new DeleteMessageCommand({

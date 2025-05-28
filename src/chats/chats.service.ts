@@ -127,7 +127,7 @@ export class ChatsService {
 
     const message = this.msgService.getModel(body, chatId, contextUser);
 
-    await this.msgService.create({ body, chatId: chat._id.toString() }, contextUser);
+    // await this.msgService.create({ body, chatId: chat._id.toString() }, contextUser);
 
     await this.redisService.sendMessageToChat(chatId, message);
 

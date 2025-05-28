@@ -165,8 +165,6 @@ export class MessagesService {
 
     await this.redisService.sendMessageToChat(chatId, message);
 
-    await this.eventBridgeService.publishMessageEvent(message);
-
     const payload: MessageSendPayload = {
       messageSend: message,
     };
