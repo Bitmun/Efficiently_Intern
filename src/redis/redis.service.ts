@@ -31,6 +31,14 @@ export class RedisService {
     await this.redisRepository.expire(RedisPrefixEnum.SEND_MESSAGE, chatId, 60);
   }
 
+  public async setLastSyncDate(newDate: Date): Promise<void> {
+    await this.redisRepository.set(
+      RedisPrefixEnum.LAST_SYNC,
+      RedisPrefixEnum.LAST_SYNC,
+      newDate.toISOString(),
+    );
+  }
+
   public async findChatsLastMessages(chatId: string, limit = 20): Promise<Message[]> {
     const rawMessages = await this.redisRepository.lrange(
       RedisPrefixEnum.SEND_MESSAGE,
@@ -39,6 +47,36 @@ export class RedisService {
       limit - 1,
     );
     return rawMessages.map((m) => JSON.parse(m) as Message);
+  }
+
+  public async findAllActiveChats(limit = 20): Promise<Message[]> {
+    const keys = await this.redisRepository.scanKeysByPrefix(
+      RedisPrefixEnum.SEND_MESSAGE,
+    );
+
+    const result: Message[] = [];
+
+    for (const fullKey of keys) {
+      const chatId = fullKey.split(':')[1];
+      const rawMessages = await this.redisRepository.lrange(
+        RedisPrefixEnum.SEND_MESSAGE,
+        chatId,
+        0,
+        limit - 1,
+      );
+      const messages = rawMessages.map((m) => JSON.parse(m) as Message);
+      result.push(...messages);
+    }
+
+    return result;
+  }
+
+  public async getLastMsgsSync(): Promise<Date> {
+    const lastSyncDate = await this.redisRepository.get(
+      RedisPrefixEnum.LAST_SYNC,
+      RedisPrefixEnum.LAST_SYNC,
+    );
+    return lastSyncDate ? new Date(lastSyncDate) : new Date(Date.now() - 5000);
   }
 
   public async getUsersProjectChats(
@@ -50,5 +88,9 @@ export class RedisService {
       userId + ':' + projectId,
     );
     return chats ? (JSON.parse(chats) as string[]) : null;
+  }
+
+  public async flushAll(): Promise<void> {
+    return this.redisRepository.flushAll();
   }
 }

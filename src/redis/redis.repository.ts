@@ -51,4 +51,28 @@ export class RedisRepository implements OnModuleDestroy {
   public async expire(prefix: string, key: string, seconds: number): Promise<void> {
     await this.redisClient.expire(`${prefix}:${key}`, seconds);
   }
+
+  public async flushAll(): Promise<void> {
+    await this.redisClient.flushall();
+  }
+
+  public async scanKeysByPrefix(prefix: string): Promise<string[]> {
+    const pattern = `${prefix}:*`;
+    const keys: string[] = [];
+    let cursor = '0';
+
+    do {
+      const [nextCursor, foundKeys] = await this.redisClient.scan(
+        cursor,
+        'MATCH',
+        pattern,
+        'COUNT',
+        100,
+      );
+      cursor = nextCursor;
+      keys.push(...foundKeys);
+    } while (cursor !== '0');
+
+    return keys;
+  }
 }

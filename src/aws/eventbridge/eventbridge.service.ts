@@ -1,25 +1,13 @@
 import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
-import { SchedulerClient } from '@aws-sdk/client-scheduler';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class EventBridgeService implements OnModuleInit {
   private client: EventBridgeClient;
-  private schedulerClient: SchedulerClient;
 
   constructor(private configService: ConfigService) {
     this.client = new EventBridgeClient({
-      region: this.configService.get<string>('AWS_REGION') ?? 'us-east-1',
-      endpoint: this.configService.get<string>('AWS_ENDPOINT') ?? 'http://localhost:4566',
-      credentials: {
-        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID') ?? 'test',
-        secretAccessKey:
-          this.configService.get<string>('AWS_SECRET_ACCESS_KEY') ?? 'test',
-      },
-    });
-
-    this.schedulerClient = new SchedulerClient({
       region: this.configService.get<string>('AWS_REGION') ?? 'us-east-1',
       endpoint: this.configService.get<string>('AWS_ENDPOINT') ?? 'http://localhost:4566',
       credentials: {
@@ -52,6 +40,6 @@ export class EventBridgeService implements OnModuleInit {
         .catch((error) => {
           console.error('Error scheduling sync event:', error);
         });
-    }, 20000);
+    }, 5000);
   }
 }

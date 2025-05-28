@@ -7,8 +7,9 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Message } from 'src/messages/models/message.model';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class MessagesSyncService implements OnModuleInit {
@@ -17,6 +18,7 @@ export class MessagesSyncService implements OnModuleInit {
   constructor(
     @InjectModel(Message.name) private readonly msgModel: Model<Message>,
     private configService: ConfigService,
+    private readisService: RedisService,
   ) {
     this.sqsClient = new SQSClient({
       region: this.configService.get<string>('AWS_REGION') ?? 'us-east-1',
@@ -45,21 +47,24 @@ export class MessagesSyncService implements OnModuleInit {
         }),
       );
 
-      console.log('Received messages:', response.Messages);
-
       if (!response.Messages) continue;
 
+      const lastSync = await this.readisService.getLastMsgsSync();
+
+      const activeMessages = await this.readisService.findAllActiveChats();
+
+      const msgsToSync = activeMessages
+        .filter((msg) => new Date(msg.createdAt) > lastSync)
+        .map((filtered) => ({
+          ...filtered,
+          chatId: new Types.ObjectId(filtered.chatId),
+        }));
+
+      if (msgsToSync.length !== 0) {
+        await this.msgModel.insertMany(msgsToSync);
+      }
+
       for (const msg of response.Messages) {
-        // const parsedBody = JSON.parse(msg.Body!) as { detail: Message };
-
-        // const messageBody = parsedBody.detail;
-
-        // await this.msgModel.create({
-        //   ...messageBody,
-        //   _id: new Types.ObjectId(messageBody._id),
-        //   chatId: new Types.ObjectId(messageBody.chatId),
-        // });
-
         await this.sqsClient.send(
           new DeleteMessageCommand({
             QueueUrl: this.queueUrl,
@@ -67,6 +72,8 @@ export class MessagesSyncService implements OnModuleInit {
           }),
         );
       }
+
+      await this.readisService.setLastSyncDate(new Date());
     }
   }
 }

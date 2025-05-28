@@ -1,3 +1,7 @@
+#!/bin/bash
+
+echo "Initializing LocalStack resources..."
+
 awslocal sqs create-queue --queue-name message-sync-queue
 
 awslocal events create-event-bus --name chat-bus

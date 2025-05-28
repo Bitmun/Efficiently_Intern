@@ -29,6 +29,7 @@ export class MessagesService {
       username: contextUser.login,
       body: body,
       chatId: new Types.ObjectId(chatId),
+      createdAt: new Date(),
     });
   }
 

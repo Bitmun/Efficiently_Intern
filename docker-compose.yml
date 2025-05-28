@@ -53,24 +53,6 @@ services:
       - './localstack/init:/etc/localstack/init/ready.d'
       - "/var/run/docker.sock:/var/run/docker.sock"
 
-  # app:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: nest-app
-  #   restart: always
-  #   ports:
-  #     - '3000:3000'
-  #   volumes:
-  #     - .:/usr/src/app
-  #     - /usr/src/app/node_modules
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - db
-  #     - cache
-  #     - localstack
-
 volumes:
   cache:
     driver: local
