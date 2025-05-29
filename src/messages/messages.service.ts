@@ -43,8 +43,8 @@ export class MessagesService {
 
   public async findChatsMessages(
     chatId: Types.ObjectId,
-    limit = 20,
     offset = 0,
+    limit = 20,
   ): Promise<Message[]> {
     return this.msgModel
       .find({ chatId })

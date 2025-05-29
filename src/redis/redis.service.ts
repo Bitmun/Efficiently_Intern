@@ -24,10 +24,24 @@ export class RedisService {
     );
   }
 
+  public async isChatActive(chatId: string): Promise<boolean> {
+    return await this.redisRepository.exists(RedisPrefixEnum.SEND_MESSAGE, chatId);
+  }
+
   public async sendMessageToChat(chatId: string, message: Message): Promise<void> {
     await this.redisRepository.lpush(RedisPrefixEnum.SEND_MESSAGE, chatId, [
       JSON.stringify(message),
     ]);
+    await this.redisRepository.expire(RedisPrefixEnum.SEND_MESSAGE, chatId, 60);
+  }
+
+  public async supplementCachedMsgs(chatId: string, messages: Message[]): Promise<void> {
+    const stringifiedMessages = messages.map((msg) => JSON.stringify(msg));
+    await this.redisRepository.rpush(
+      RedisPrefixEnum.SEND_MESSAGE,
+      chatId,
+      stringifiedMessages,
+    );
     await this.redisRepository.expire(RedisPrefixEnum.SEND_MESSAGE, chatId, 60);
   }
 
@@ -53,7 +67,7 @@ export class RedisService {
     return rawMessages.map((m) => JSON.parse(m) as Message);
   }
 
-  public async findAllActiveChats(limit = 20): Promise<Message[]> {
+  public async findAllActiveMessage(limit = 20): Promise<Message[]> {
     const keys = await this.redisRepository.scanKeysByPrefix(
       RedisPrefixEnum.SEND_MESSAGE,
     );

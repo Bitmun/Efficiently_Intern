@@ -30,6 +30,13 @@ export class RedisRepository implements OnModuleDestroy {
     await this.redisClient.lpush(`${prefix}:${key}`, ...value);
   }
 
+  public async rpush(
+    prefix: string,
+    key: string,
+    value: string[] | number[],
+  ): Promise<void> {
+    await this.redisClient.rpush(`${prefix}:${key}`, ...value);
+  }
   public async lrange(
     prefix: string,
     key: string,
@@ -74,5 +81,10 @@ export class RedisRepository implements OnModuleDestroy {
     } while (cursor !== '0');
 
     return keys;
+  }
+
+  public async exists(prefix: string, key: string): Promise<boolean> {
+    const fullKey = `${prefix}:${key}`;
+    return (await this.redisClient.exists(fullKey)) !== 0;
   }
 }

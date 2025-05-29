@@ -51,7 +51,7 @@ export class MessagesSyncService implements OnModuleInit {
 
       const lastSync = await this.readisService.getLastMsgsSync();
 
-      const activeMessages = await this.readisService.findAllActiveChats();
+      const activeMessages = await this.readisService.findAllActiveMessage();
 
       const msgsToSync = activeMessages
         .filter((msg) => new Date(msg.createdAt) > lastSync)
@@ -64,6 +64,8 @@ export class MessagesSyncService implements OnModuleInit {
         await this.msgModel.insertMany(msgsToSync);
       }
 
+      await this.readisService.setLastSyncDate(new Date());
+
       for (const msg of response.Messages) {
         await this.sqsClient.send(
           new DeleteMessageCommand({
@@ -72,8 +74,6 @@ export class MessagesSyncService implements OnModuleInit {
           }),
         );
       }
-
-      await this.readisService.setLastSyncDate(new Date());
     }
   }
 }

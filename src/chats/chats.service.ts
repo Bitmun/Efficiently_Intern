@@ -65,7 +65,7 @@ export class ChatsService {
     ]);
   }
 
-  public async findChatsLastMessages(
+  public async getChatsMessages(
     chatId: Types.ObjectId | string,
     limit: number,
     offset: number,
@@ -78,15 +78,40 @@ export class ChatsService {
 
     const cachedMsgs = await this.redisService.findChatsLastMessages(
       chatId.toString(),
-      limit,
       offset,
+      limit,
     );
+
+    if (offset === 0) {
+      if (cachedMsgs.length === 0) {
+        const mongoMsgs = await this.msgService.findChatsMessages(existingChat._id);
+        if (mongoMsgs.length === 0) {
+          console.log('nothing to add to cache offset 0');
+          return [];
+        }
+        await this.redisService.supplementCachedMsgs(chatId.toString(), mongoMsgs);
+        return mongoMsgs;
+      }
+      return cachedMsgs;
+    }
 
     if (cachedMsgs.length >= limit) {
       return cachedMsgs;
     }
 
-    return this.msgService.findChatsMessages(existingChat._id, limit, offset);
+    const mongoMsgs = await this.msgService.findChatsMessages(
+      existingChat._id,
+      offset + cachedMsgs.length,
+      limit - cachedMsgs.length,
+    );
+
+    if (mongoMsgs.length === 0) {
+      return cachedMsgs;
+    }
+
+    await this.redisService.supplementCachedMsgs(chatId.toString(), mongoMsgs);
+
+    return [...cachedMsgs, ...mongoMsgs];
   }
 
   public async create(
@@ -137,6 +162,15 @@ export class ChatsService {
     }
 
     const message = this.msgService.getModel(body, chatId, contextUser);
+
+    const isChatActive = await this.redisService.isChatActive(chatId);
+
+    if (!isChatActive) {
+      const mongoMsgs = await this.msgService.findChatsMessages(chat._id);
+      if (mongoMsgs.length !== 0) {
+        await this.redisService.supplementCachedMsgs(chatId, mongoMsgs);
+      }
+    }
 
     await this.redisService.sendMessageToChat(chatId, message);
 
